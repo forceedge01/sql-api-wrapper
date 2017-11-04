@@ -22,6 +22,27 @@ abstract class BaseProvider
 
     abstract public function getDataMapping();
 
+    public function insertSeedData()
+    {
+        // This will kick off seed data insertion from the constructor.
+        $this->insertSeedData(static::seedData());
+    }
+
+    private function insertSeedData(array $seedData)
+    {
+        foreach ($seedData as $table => $individualSeedData) {
+            if (! is_string($table)) {
+                $table = $this->getBaseTable();
+            }
+
+            if (! is_array($individualSeedData)) {
+                throw new Exception("Provided data '$individualSeedData' invalid, must be an array.");
+            }
+
+            $this->api->insert($table, $individualSeedData);
+        }
+    }
+
     public function getKeyword($key)
     {
     	$this->api->get('keyStore')->getKeyword($this->getBaseTable() . '.' . $this->getFieldMapping($key));
