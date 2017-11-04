@@ -1,0 +1,5 @@
+{
+	"require": {
+		"genesis/behat-sql-extension": "~5.0"
+	}
+}
