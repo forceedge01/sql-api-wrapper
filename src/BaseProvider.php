@@ -8,24 +8,29 @@ use Genesis\SQLExtension\Context\Interfaces;
 
 /**
 * This class serves as a Decorator for the Genesis API.
+* To use this class effectively, create separate classes for each of your tables and extend off this class.
 */
-abstract class BaseProvider
+abstract class BaseProvider implements APIDecorator
 {
     private $api;
 
     public function __construct(Interfaces\APIInterface $api)
     {
     	$this->api = $api;
+
+        $this->insertSeedDataIfExists();
     }
 
     abstract public function getBaseTable();
 
     abstract public function getDataMapping();
 
-    public function insertSeedData()
+    public function insertSeedDataIfExists()
     {
-        // This will kick off seed data insertion from the constructor.
-        $this->insertSeedData(static::seedData());
+        if (method_exists($this, 'setupSeedData')) {
+            // This will kick off seed data insertion from the constructor.
+            $this->insertSeedData($this->setupSeedData());
+        }
     }
 
     private function insertSeedData(array $seedData)
