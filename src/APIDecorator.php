@@ -4,19 +4,14 @@ namespace Genesis\SQLExtensionWrapper;
 
 use Exception;
 
-use Genesis\SQLExtension\Context\Interfaces;
+use Genesis\SQLExtension\Context\API;
 
 /**
 * This class serves as a Decorator for the Genesis API class.
 * To use this class effectively, create separate classes for each of your tables and extend off this class.
 */
-abstract class APIDecorator implements APIDecoratorInterface
+abstract class APIDecorator extends Context\API implements APIDecoratorInterface
 {
-    /**
-     * @var Interfaces\APIInterface
-     */
-    private $api;
-
     /**
      * @var array The saved session storage.
      */
@@ -24,13 +19,9 @@ abstract class APIDecorator implements APIDecoratorInterface
 
     /**
      * Will attempt to insert seed data if setupSeedData method is defined.
-     *
-     * @param Interfaces\APIInterface $api The API that will interact with the database for us.
      */
-    public function __construct(Interfaces\APIInterface $api)
+    public function __construct()
     {
-        $this->api = $api;
-
         $this->insertSeedDataIfExists();
     }
 
@@ -47,16 +38,6 @@ abstract class APIDecorator implements APIDecoratorInterface
      * @return array
      */
     abstract public function getDataMapping();
-
-    /**
-     * Interact with the API directly for advanced integrations.
-     *
-     * @return Interfaces\APIInterface
-     */
-    public function getAPI()
-    {
-        return $this->api;
-    }
 
     /**
      * Inserts seed data if method 'setupSeedData' exists on calling class.

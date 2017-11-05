@@ -9,13 +9,6 @@ namespace Genesis\SQLExtensionWrapper;
 interface APIDecoratorInterface
 {
     /**
-     * Interact with the API directly for advanced integrations.
-     *
-     * @return Interfaces\APIInterface
-     */
-    public function getAPI();
-
-    /**
      * Inserts seed data if method 'setupSeedData' exists on calling class.
      *
      * @return void
