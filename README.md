@@ -1,7 +1,7 @@
 Behat SQL API Wrapper
 =================
 
-This wrapper provides with powerful tools around the [https://github.com/forceedge01/behat-sql-extension](behat-sql-extension) API class. Methods provided:
+This wrapper provides with powerful tools around the [behat-sql-extension](https://github.com/forceedge01/behat-sql-extension) API class. Methods provided:
 
 - insertSeedDataIfExists() // Auto fires on construct.
 - createFixture(array $data = [], string $uniqueColumn = null) // Recreates a record for fresh usage.
