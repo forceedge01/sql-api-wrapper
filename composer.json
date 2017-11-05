@@ -1,5 +1,26 @@
 {
+    "name": "genesis/behat-sql-api-wrapper",
+    "type": "behat-extension",
+    "description": "SQL/PDO extension for behat - extending capabilities provided by the original SQL API extension.",
+    "keywords": ["web", "test", "browser", "pdo", "behat", "sql", "testing", "bdd", "database", "mysql", "data"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Abdul Wahhab Qureshi",
+            "email": "its.inevitable@hotmail.com"
+        }
+    ],
 	"require": {
-		"genesis/behat-sql-extension": "~5.0"
-	}
+		"genesis/behat-sql-extension": "~5.0",
+        "php": "~5.4|~7.0"
+	},
+	"require-dev": {
+        "phpunit/phpunit": "~5.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "Genesis\\SQLExtensionWrapper\\": "src/",
+            "Genesis\\SQLExtensionWrapper\\Tests\\": "tests/"
+         }
+    }
 }
