@@ -25,14 +25,14 @@ Creating a datacomponent to use in your context files.
 
 class UserDataComponent extends APIDecorator
 {
-	/**
+    /**
      * Returns the base table to interact with.
      *
      * @return string
      */
     public function getBaseTable()
     {
-    	return 'User';
+        return 'User';
     }
 
     /**
@@ -42,13 +42,13 @@ class UserDataComponent extends APIDecorator
      */
     public function getDataMapping()
     {
-    	return [
-    		'id' => 'user_id',
-    		'name' => 'full_name',
-    		'dateOfBirth' => 'dob',
-    		'gender' => 'gender',
-    		'status' => 'status'
-    	];
+        return [
+            'id' => 'user_id',
+            'name' => 'full_name',
+            'dateOfBirth' => 'dob',
+            'gender' => 'gender',
+            'status' => 'status'
+        ];
     }
 
     /**
@@ -63,11 +63,11 @@ class UserDataComponent extends APIDecorator
      */
     public function updateStatusById($status, $userId)
     {
-    	$this->update($this->getBaseTable(), [
-    		'status' => $this->subSelect('Status', 'id', ['name' => $status])
-    	], [
-    		'id' => $userId
-    	])
+        $this->update($this->getBaseTable(), [
+            'status' => $this->subSelect('Status', 'id', ['name' => $status])
+        ], [
+            'id' => $userId
+        ])
     }
 }
 
@@ -87,88 +87,88 @@ use Exception;
  */
 class FeatureContext
 {
-	/**
-	 * Setup object.
-	 */
-	public function __construct()
-	{
-		// This logic can be wrapper in a convenience method.
-		$api = ...;
-		$this->userDataComponent = new UserDataComponent($api);
-	}
+    /**
+     * Setup object.
+     */
+    public function __construct()
+    {
+        // This logic can be wrapper in a convenience method.
+        $api = ...;
+        $this->userDataComponent = new UserDataComponent($api);
+    }
 
-	/**
-	 * @Given I have a User
-	 *
-	 * Use the API to create a fixture user.
-	 */
-	public function createUser()
-	{
-		// This will create a fixture user.
-		// The name will be set to 'Wahab Qureshi'. The rest of the fields if required by the database will be autofilled
-		// with fixture data, if they are nullable, null will be stored.
-		// If the record exists already, it will be deleted based on the 'name' key provided.
-		$this->userDataComponent->createFixture([
-			'name' => 'Wahab Qureshi'
-		], 'name');
-	}
+    /**
+     * @Given I have a User
+     *
+     * Use the API to create a fixture user.
+     */
+    public function createUser()
+    {
+        // This will create a fixture user.
+        // The name will be set to 'Wahab Qureshi'. The rest of the fields if required by the database will be autofilled
+        // with fixture data, if they are nullable, null will be stored.
+        // If the record exists already, it will be deleted based on the 'name' key provided.
+        $this->userDataComponent->createFixture([
+            'name' => 'Wahab Qureshi'
+        ], 'name');
+    }
 
-	/**
-	 * @Given I have (number) User(s)
-	 *
-	 * Use the API to create random 10 users.
-	 */
-	public function create10Users($count)
-	{
-		// Save this user's session.
-		$this->userDataComponent->saveSession('id');
+    /**
+     * @Given I have (number) User(s)
+     *
+     * Use the API to create random 10 users.
+     */
+    public function create10Users($count)
+    {
+        // Save this user's session.
+        $this->userDataComponent->saveSession('id');
 
-		// Create 10 random users.
-		for($i = 0; $i < 10; $i++) {
-			$this->userDataComponent->createFixture();
-		}
+        // Create 10 random users.
+        for($i = 0; $i < 10; $i++) {
+            $this->userDataComponent->createFixture();
+        }
 
-		// Restore session of the user we created above.
-		$this->userDataComponent->restoreSession();
-	}
+        // Restore session of the user we created above.
+        $this->userDataComponent->restoreSession();
+    }
 
-	/**
-	 * @Given I should see a User
-	 *
-	 * Use the API to retrieve the user created.
-	 */
-	public function assertUserOnPage()
-	{
-		// Assumptions - we ran the following before running this command:
-		// Given I have a User
-		// And I have 10 Users
+    /**
+     * @Given I should see a User
+     *
+     * Use the API to retrieve the user created.
+     */
+    public function assertUserOnPage()
+    {
+        // Assumptions - we ran the following before running this command:
+        // Given I have a User
+        // And I have 10 Users
 
-		// Retrieve data created, this will reference the user created by 'Given I have a User' as the session was preserved
-		// in the following step definition.
-		$id = $this->userDataComponent->getValue('id');
-		$name = $this->userDataComponent->getValue('name');
-		$dateOfBirth = $this->userDataComponent->getValue('dateOfBirth');
-		$gender = $this->userDataComponent->getValue('gender');
+        // Retrieve data created, this will reference the user created by 'Given I have a User' as the session was preserved
+        // in the following step definition.
+        $id = $this->userDataComponent->getValue('id');
+        $name = $this->userDataComponent->getValue('name');
+        $dateOfBirth = $this->userDataComponent->getValue('dateOfBirth');
+        $gender = $this->userDataComponent->getValue('gender');
 
-		// Assert that data is on the page.
-		$this->assertSession()->assertTextOnPage($id);
-		$this->assertSession()->assertTextOnPage($name);
-		$this->assertSession()->assertTextOnPage($dateOfBirth);
-		$this->assertSession()->assertTextOnPage($gender);
-	}
+        // Assert that data is on the page.
+        $this->assertSession()->assertTextOnPage($id);
+        $this->assertSession()->assertTextOnPage($name);
+        $this->assertSession()->assertTextOnPage($dateOfBirth);
+        $this->assertSession()->assertTextOnPage($gender);
+    }
 
-	/**
-	 * @Given I should see (number) User(s) in the list
-	 *
-	 * Consumption of the users created above. For illustration purposes only.
-	 */
-	public function assertUserOnPage($number)
-	{
-		$usersList = $this->getSession()->getPage()->find('css', '#usersListContainer li');
-		$actualCount = count($usersList);
+    /**
+     * @Given I should see (number) User(s) in the list
+     *
+     * Consumption of the users created above. For illustration purposes only.
+     */
+    public function assertUserOnPage($number)
+    {
+        $usersList = $this->getSession()->getPage()->find('css', '#usersListContainer li');
+        $actualCount = count($usersList);
 
-		if ($number !== $actualCount) {
-			throw new Exception("Expected to have '$number' users, got '$actualCount'");
-		}
-	}
+        if ($number !== $actualCount) {
+            throw new Exception("Expected to have '$number' users, got '$actualCount'");
+        }
+    }
 }
