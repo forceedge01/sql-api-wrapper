@@ -13,6 +13,11 @@ use Genesis\SQLExtension\Context\API;
 abstract class APIDecorator extends Context\API implements APIDecoratorInterface
 {
     /**
+     * @var Context\Interfaces\APIInterface
+     */
+    private static $api;
+
+    /**
      * @var array The saved session storage.
      */
     private static $savedSession;
@@ -20,8 +25,9 @@ abstract class APIDecorator extends Context\API implements APIDecoratorInterface
     /**
      * Will attempt to insert seed data if setupSeedData method is defined.
      */
-    public function __construct()
+    public function __construct(Context\Interfaces\APIInterface $api)
     {
+        self::$api = $api;
         $this->insertSeedDataIfExists();
     }
 
@@ -38,6 +44,69 @@ abstract class APIDecorator extends Context\API implements APIDecoratorInterface
      * @return array
      */
     abstract public function getDataMapping();
+
+    /**
+     * @return Context\Interfaces\APIInterface
+     */
+    public function getAPI()
+    {
+        return self::$api;
+    }
+
+    /**
+     * Couple with getValue() to get the resulting values out.
+     *
+     * @param string $table The table to select from.
+     * @param array $where The selection criteria.
+     *
+     * @return $this
+     */
+    public function select($table, array $where)
+    {
+        $this->getAPI()->select($table, $this->resolveDataFieldMappings($where));
+
+        return $this;
+    }
+
+    /**
+     * @param string $table The table to insert into.
+     * @param array $data The data set to insert.
+     *
+     * @return int The insert Id.
+     */
+    public function insert($table, array $data)
+    {
+        $this->getAPI()->insert($table, $this->resolveDataFieldMappings($data));
+
+        return $this->getAPI()->getLastId();
+    }
+
+    /**
+     * @param string $table The table to select from.
+     * @param array $valus The values data set to update with.
+     * @param array $where The selection criteria.
+     *
+     * @return $this
+     */
+    public function update($table, array $values, array $where)
+    {
+        $this->getAPI()->update($table, $this->resolveDataFieldMappings($values), $this->resolveDataFieldMappings($where));
+
+        return $this;
+    }
+
+    /**
+     * @param string $table The table to delete from.
+     * @param array $where The selection criteria.
+     *
+     * @return $this
+     */
+    public function delete($table, array $where)
+    {
+        $this->getAPI()->delete($table, $this->resolveDataFieldMappings($where));
+
+        return $this;
+    }
 
     /**
      * Inserts seed data if method 'setupSeedData' exists on calling class.

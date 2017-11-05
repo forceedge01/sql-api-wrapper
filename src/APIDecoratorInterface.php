@@ -9,6 +9,11 @@ namespace Genesis\SQLExtensionWrapper;
 interface APIDecoratorInterface
 {
     /**
+     * @return Context\Interfaces\APIInterface
+     */
+    public function getAPI();
+
+    /**
      * Inserts seed data if method 'setupSeedData' exists on calling class.
      *
      * @return void
@@ -24,6 +29,41 @@ interface APIDecoratorInterface
      * @return string
      */
     public function getValue($column);
+
+    /**
+     * Couple with getValue() to get the resulting values out.
+     *
+     * @param string $table The table to select from.
+     * @param array $where The selection criteria.
+     *
+     * @return $this
+     */
+    public function select($table, array $where);
+
+    /**
+     * @param string $table The table to insert into.
+     * @param array $data The data set to insert.
+     *
+     * @return int The insert Id.
+     */
+    public function insert($table, array $data);
+
+    /**
+     * @param string $table The table to select from.
+     * @param array $valus The values data set to update with.
+     * @param array $where The selection criteria.
+     *
+     * @return $this
+     */
+    public function update($table, array $values, array $where);
+
+    /**
+     * @param string $table The table to delete from.
+     * @param array $where The selection criteria.
+     *
+     * @return $this
+     */
+    public function delete($table, array $where);
 
     /**
      * Truncates a table based on the value provided by getBaseTable and assumes that the table has the column id.
