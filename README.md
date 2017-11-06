@@ -19,11 +19,57 @@ Example usage:
 
 Creating a datacomponent to use in your context files.
 
+To use this decorator effectively, you will have to make good use of polymorphism. Extend the BaseProvider in your project and implement the abstract method getAPI(). This method needs to return an object that implements Genesis\SQLExtension\Context\Interfaces\APIInterface.
+
+```php
+# BaseDataComponent.php
+<?php
+
+use Genesis\SQLExtensionWrapper\BaseProvider;
+use Genesis\SQLExtension\Context;
+
+/**
+ * Serves as a base class for your own project, makes refactoring easier if you decide to inject your own version of 
+ * the API.
+ */
+abstract class BaseDataComponent extends BaseProvider
+{
+    /**
+     * @var array The connection details the API expects.
+     */
+    public static $connectionDetails;
+
+    /**
+     * @var Context\Interfaces\APIInterface
+     */
+    private static $sqlApi;
+
+    /**
+     * @return Context\Interfaces\APIInterface
+     */
+    public function getAPI()
+    {
+        if (! self::$sqlApi) {
+            self::$sqlApi = new Context\API(
+                new Context\DBManager(self::$connectionDetails),
+                new Context\SQLBuilder(),
+                new Context\LocalKeyStore(),
+                new Context\SQLHistory()
+            );
+        }
+
+        return self::$sqlApi;
+    }
+}
+```
+
+Then further extend your class to use with your data component classes.
+
 ```php
 # UserDataComponent.php
 <?php
 
-class UserDataComponent extends APIDecorator
+class UserDataComponent extends BaseDataComponent
 {
     /**
      * Returns the base table to interact with.
