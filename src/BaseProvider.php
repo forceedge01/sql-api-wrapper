@@ -18,33 +18,25 @@ abstract class BaseProvider implements APIDecoratorInterface
     private static $savedSession;
 
     /**
-     * Will attempt to insert seed data if setupSeedData method is defined.
-     */
-    public function __construct()
-    {
-        $this->insertSeedDataIfExists();
-    }
-
-    /**
      * Override this method to inject your own version of the API.
      *
      * @return Context\Interfaces\APIInterface
      */
-    abstract public function getAPI();
+    abstract public static function getAPI();
 
     /**
      * Returns the base table to interact with.
      *
      * @return string
      */
-    abstract public function getBaseTable();
+    abstract public static function getBaseTable();
 
     /**
      * Returns the data mapping for the base table.
      *
      * @return array
      */
-    abstract public function getDataMapping();
+    abstract public static function getDataMapping();
 
     /**
      * Couple with getValue() to get the resulting values out.
@@ -54,11 +46,43 @@ abstract class BaseProvider implements APIDecoratorInterface
      *
      * @return $this
      */
-    public function select($table, array $where)
+    public static function select($table, array $where)
     {
-        $this->getAPI()->select($table, $this->resolveDataFieldMappings($where));
+        static::getAPI()->select($table, self::resolveDataFieldMappings($where));
 
         return $this;
+    }
+
+    /**
+     * @param string $table
+     * @param array $where
+     *
+     * @return array
+     */
+    public static function getSingle($table, array $where)
+    {
+        self::select($table, $where);
+
+        $data = [];
+        foreach (static::getDataMapping() as $name => $dbColumnName) {
+            $data[$name] = self::getValue($name);
+        }
+
+        return $data;
+    }
+
+    /**
+     * @param string $column
+     * @param string $table
+     * @param array $where
+     *
+     * @return string
+     */
+    public static function getColumn($column, $table, array $where)
+    {
+        self::select($table, $where);
+
+        return static::getValue($column);
     }
 
     /**
@@ -67,11 +91,11 @@ abstract class BaseProvider implements APIDecoratorInterface
      *
      * @return int The insert Id.
      */
-    public function insert($table, array $data)
+    public static function insert($table, array $data)
     {
-        $this->getAPI()->insert($table, $this->resolveDataFieldMappings($data));
+        static::getAPI()->insert($table, self::resolveDataFieldMappings($data));
 
-        return $this->getAPI()->getLastId();
+        return static::getAPI()->getLastId();
     }
 
     /**
@@ -79,26 +103,26 @@ abstract class BaseProvider implements APIDecoratorInterface
      * @param array $valus The values data set to update with.
      * @param array $where The selection criteria.
      *
-     * @return $this
+     * @return void
      */
-    public function update($table, array $values, array $where)
+    public static function update($table, array $values, array $where)
     {
-        $this->getAPI()->update($table, $this->resolveDataFieldMappings($values), $this->resolveDataFieldMappings($where));
-
-        return $this;
+        static::getAPI()->update(
+            $table,
+            self::resolveDataFieldMappings($values),
+            self::resolveDataFieldMappings($where)
+        );
     }
 
     /**
      * @param string $table The table to delete from.
      * @param array $where The selection criteria.
      *
-     * @return $this
+     * @return void
      */
-    public function delete($table, array $where)
+    public static function delete($table, array $where)
     {
-        $this->getAPI()->delete($table, $this->resolveDataFieldMappings($where));
-
-        return $this;
+        static::getAPI()->delete($table, static::resolveDataFieldMappings($where));
     }
 
     /**
@@ -106,11 +130,10 @@ abstract class BaseProvider implements APIDecoratorInterface
      *
      * @return void
      */
-    public function insertSeedDataIfExists()
+    public static function insertSeedDataIfExists()
     {
-        if (method_exists($this, 'setupSeedData')) {
-            // This will kick off seed data insertion from the constructor.
-            $this->insertSeedData($this->setupSeedData());
+        if (method_exists(get_called_class(), 'setupSeedData')) {
+            self::insertSeedData(static::setupSeedData());
         }
     }
 
@@ -123,11 +146,16 @@ abstract class BaseProvider implements APIDecoratorInterface
      *
      * @return string
      */
-    public function getValue($key)
+    public static function getValue($key)
     {
-        $this->ensureBaseTable();
+        self::ensureBaseTable();
 
-        $this->getAPI()->get('keyStore')->getKeyword($this->getBaseTable() . '.' . $this->getFieldMapping($key));
+        return static::getAPI()->get('keyStore')
+            ->getKeyword(
+                static::getBaseTable() .
+                '.' .
+                self::getFieldMapping($key)
+            );
     }
 
     /**
@@ -136,11 +164,11 @@ abstract class BaseProvider implements APIDecoratorInterface
      *
      * @return void
      */
-    public function truncate()
+    public static function truncate()
     {
-        $this->ensureBaseTable();
+        self::ensureBaseTable();
 
-        $this->getAPI()->delete($this->getBaseTable(), [
+        static::getAPI()->delete(static::getBaseTable(), [
             'id' => '!NULL'
         ]);
     }
@@ -150,21 +178,24 @@ abstract class BaseProvider implements APIDecoratorInterface
      * Depends on getBaseTable.
      *
      * @param array $data The data set to create the fixture from, note if no data is provided, it will be auto-filled.
-     * @param string|null $uniqueColumn The column that uniquely represents the data set and any old data set would match.
+     * @param string|null $uniqueColumn The column that uniquely represents the data set and any
+     * old data set would match.
      *
      * @return int The last insert Id of the fixture data.
      */
-    public function createFixture(array $data = [], $uniqueColumn = null)
+    public static function createFixture(array $data = [], $uniqueColumn = null)
     {
-        $this->ensureBaseTable();
+        self::ensureBaseTable();
 
         if ($uniqueColumn) {
-            $this->getAPI()->delete($this->getBaseTable(), $this->resolveDataFieldMappings([$uniqueColumn => $data[$uniqueColumn]]));
+            static::getAPI()->delete(static::getBaseTable(), self::resolveDataFieldMappings(
+                [$uniqueColumn => $data[$uniqueColumn]]
+            ));
         }
 
-        $this->getAPI()->insert($this->getBaseTable(), $this->resolveDataFieldMappings($data));
+        static::getAPI()->insert(static::getBaseTable(), self::resolveDataFieldMappings($data));
 
-        return $this->getAPI()->getLastId();
+        return static::getAPI()->getLastId();
     }
 
     /**
@@ -177,15 +208,15 @@ abstract class BaseProvider implements APIDecoratorInterface
      *
      * @example Example usage: Update postcode where address Id is provided.
      *
-     * $this->update('Address', [
-     *     'postCodeId' => $this->subSelect('PostCode.id|code: B237QQ')
+     * class::update('Address', [
+     *     'postCodeId' => class::subSelect('PostCode', 'id', ['code'=> 'B237QQ'])
      * ], [
      *     'id' => $addressId
      * ]);
      *
      * @return string The subSelect external ref query.
      */
-    public function subSelect($table, $column, array $where)
+    public static function subSelect($table, $column, array $where)
     {
         $extRefWhereArray = [];
         foreach ($where as $column => $value) {
@@ -200,33 +231,29 @@ abstract class BaseProvider implements APIDecoratorInterface
     /**
      * @param string $primaryKey The unique primary key that will reference the current session.
      *
-     * @return $this
+     * @return void
      */
-    public function saveSession($primaryKey)
+    public static function saveSession($primaryKey)
     {
         self::$savedSession[get_called_class()] = [
             'key' => $primaryKey,
-            'value' => $this->getValue($primaryKey),
+            'value' => self::getValue($primaryKey),
         ];
-
-        return $this;
     }
 
     /**
      * Automatically restores the session based on the primary key stored used by saveSession call.
      *
-     * @return $this
+     * @return void
      */
-    public function restoreSession()
+    public static function restoreSession()
     {
         $callingClass = get_called_class();
 
-        $this->getAPI()->select($this->getBaseTable(), [
-            $this->getFieldMapping(self::$savedSession[$callingClass]['key']),
+        static::getAPI()->select(static::getBaseTable(), [
+            self::getFieldMapping(self::$savedSession[$callingClass]['key']),
             self::$savedSession[$callingClass]['value'],
         ]);
-
-        return $this;
     }
 
     /**
@@ -236,11 +263,11 @@ abstract class BaseProvider implements APIDecoratorInterface
      *
      * @return array Resolved data set.
      */
-    protected function resolveDataFieldMappings(array $data)
+    protected static function resolveDataFieldMappings(array $data)
     {
         $resolvedData = [];
         foreach ($data as $key => $value) {
-            $resolvedData[$this->getFieldMapping($key)] = $value;
+            $resolvedData[self::getFieldMapping($key)] = $value;
         }
 
         return $resolvedData;
@@ -253,13 +280,13 @@ abstract class BaseProvider implements APIDecoratorInterface
      *
      * @return string
      */
-    protected function getFieldMapping($key)
+    protected static function getFieldMapping($key)
     {
-        if (! isset($this->getDataMapping()[$key])) {
+        if (! isset(self::getDataMapping()[$key])) {
             throw new Exception("No data mapping provided for key $key");
         }
 
-        return $this->getDataMapping()[$key];
+        return self::getDataMapping()[$key];
     }
 
     /**
@@ -270,7 +297,7 @@ abstract class BaseProvider implements APIDecoratorInterface
      *
      * @return mixed Whatever the data index contains.
      */
-    protected function getRequiredData(array $data, $key)
+    protected static function getRequiredData(array $data, $key)
     {
         if (! array_key_exists($key, $data)) {
             throw new Exception("Expect to have key '$key' provided.");
@@ -280,7 +307,8 @@ abstract class BaseProvider implements APIDecoratorInterface
     }
 
     /**
-     * Convenience method to get an optional index value out of array, if it does not exist will return the default value.
+     * Convenience method to get an optional index value out of array, if it does not exist will
+     * return the default value.
      *
      * @param array $data The data to check.
      * @param string $key The index to look for.
@@ -288,7 +316,7 @@ abstract class BaseProvider implements APIDecoratorInterface
      *
      * @return mixed Whatever the data index contains.
      */
-    protected function getOptionalData(array $data, $key, $default = null)
+    protected static function getOptionalData(array $data, $key, $default = null)
     {
         if (! array_key_exists($key, $data)) {
             return $default;
@@ -300,9 +328,9 @@ abstract class BaseProvider implements APIDecoratorInterface
     /**
      * Make sure the baseTable value is defined.
      */
-    protected function ensureBaseTable()
+    protected static function ensureBaseTable()
     {
-        if (! $this->getBaseTable()) {
+        if (! self::getBaseTable()) {
             throw new Exception('This call requires the getBaseTable to return the table to operate on.');
         }
     }
@@ -322,14 +350,14 @@ abstract class BaseProvider implements APIDecoratorInterface
 
         foreach ($seedData as $table => $individualSeedData) {
             if (! is_string($table)) {
-                $table = $this->getBaseTable();
+                $table = static::getBaseTable();
             }
 
             if (! is_array($individualSeedData)) {
                 throw new Exception("Provided data '$individualSeedData' invalid, must be an array.");
             }
 
-            $this->getAPI()->insert($table, $individualSeedData);
+            static::getAPI()->insert($table, $individualSeedData);
         }
     }
 }
