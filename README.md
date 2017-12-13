@@ -1,4 +1,4 @@
-Behat SQL API Wrapper
+SQL API Wrapper
 =================
 
 This wrapper provides with powerful tools around the [behat-sql-extension](https://github.com/forceedge01/behat-sql-extension) API class. Methods provided:
@@ -17,12 +17,12 @@ This wrapper provides with powerful tools around the [behat-sql-extension](https
 Example usage:
 ==============
 
-Creating a datacomponent to use in your context files.
+Creating a DataMod to use in your context files.
 
 To use this decorator effectively, you will have to make good use of polymorphism. Extend the BaseProvider in your project and implement the abstract method getAPI(). This method needs to return an object that implements Genesis\SQLExtension\Context\Interfaces\APIInterface.
 
 ```php
-# BaseDataComponent.php
+# BaseDataMod.php
 <?php
 
 use Genesis\SQLExtensionWrapper\BaseProvider;
@@ -32,7 +32,7 @@ use Genesis\SQLExtension\Context;
  * Serves as a base class for your own project, makes refactoring easier if you decide to inject your own version of 
  * the API.
  */
-abstract class BaseDataComponent extends BaseProvider
+abstract class BaseDataMod extends BaseProvider
 {
     /**
      * @var array The connection details the API expects.
@@ -66,10 +66,10 @@ abstract class BaseDataComponent extends BaseProvider
 Then further extend your class to use with your data component classes.
 
 ```php
-# UserDataComponent.php
+# UserDataMod.php
 <?php
 
-class UserDataComponent extends BaseDataComponent
+class UserDataMod extends BaseDataMod
 {
     /**
      * Returns the base table to interact with.
@@ -119,7 +119,7 @@ class UserDataComponent extends BaseDataComponent
 
 ```
 
-Using your UserDataComponent in your context file.
+Using your UserDataMod in your context file.
 
 ```php
 # FeatureContext.php
@@ -140,7 +140,7 @@ class FeatureContext
     {
         // This logic can be wrapper in a convenience method.
         $api = ...;
-        $this->userDataComponent = new UserDataComponent($api);
+        $this->userDataMod = new UserDataMod($api);
     }
 
     /**
@@ -154,7 +154,7 @@ class FeatureContext
         // The name will be set to 'Wahab Qureshi'. The rest of the fields if required by the database will be autofilled
         // with fixture data, if they are nullable, null will be stored.
         // If the record exists already, it will be deleted based on the 'name' key provided.
-        $this->userDataComponent->createFixture([
+        $this->userDataMod->createFixture([
             'name' => 'Wahab Qureshi'
         ], 'name');
     }
@@ -167,15 +167,15 @@ class FeatureContext
     public function create10Users($count)
     {
         // Save this user's session.
-        $this->userDataComponent->saveSession('id');
+        $this->userDataMod->saveSession('id');
 
         // Create 10 random users.
         for($i = 0; $i < 10; $i++) {
-            $this->userDataComponent->createFixture();
+            $this->userDataMod->createFixture();
         }
 
         // Restore session of the user we created above.
-        $this->userDataComponent->restoreSession();
+        $this->userDataMod->restoreSession();
     }
 
     /**
@@ -191,10 +191,10 @@ class FeatureContext
 
         // Retrieve data created, this will reference the user created by 'Given I have a User' as the session was preserved
         // in the following step definition.
-        $id = $this->userDataComponent->getValue('id');
-        $name = $this->userDataComponent->getValue('name');
-        $dateOfBirth = $this->userDataComponent->getValue('dateOfBirth');
-        $gender = $this->userDataComponent->getValue('gender');
+        $id = $this->userDataMod->getValue('id');
+        $name = $this->userDataMod->getValue('name');
+        $dateOfBirth = $this->userDataMod->getValue('dateOfBirth');
+        $gender = $this->userDataMod->getValue('gender');
 
         // Assert that data is on the page.
         $this->assertSession()->assertTextOnPage($id);
