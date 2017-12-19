@@ -347,6 +347,22 @@ class BaseProviderTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * testCreateFixture Test that createFixture executes as expected.
+     */
+    public function testCreateFixture()
+    {
+        $this->markTestIncomplete('This test has not been implemented yet.');
+        // Prepare / Mock
+        //nmock
+
+        // Execute
+        $result = $this->testObject->createFixture();
+
+        // Assert Result
+        self::assert();
+    }
+
+    /**
      * testDelete Test that delete executes as expected.
      */
     public function testDeleteWithTable()
@@ -407,22 +423,6 @@ class BaseProviderTest extends PHPUnit_Framework_TestCase
 
         // Execute
         $result = $this->testObject->truncate();
-
-        // Assert Result
-        self::assert();
-    }
-
-    /**
-     * testCreateFixture Test that createFixture executes as expected.
-     */
-    public function testCreateFixture()
-    {
-        $this->markTestIncomplete('This test has not been implemented yet.');
-        // Prepare / Mock
-        //nmock
-
-        // Execute
-        $result = $this->testObject->createFixture();
 
         // Assert Result
         self::assert();
