@@ -51,20 +51,18 @@ interface APIDecoratorInterface
      * getColumn which is better in performance.
      *
      * @param array $where
-     * @param string $table
      *
      * @return array
      */
-    public static function getSingle(array $where, $table = null);
+    public static function getSingle(array $where);
 
     /**
      * @param string $column
      * @param array $where
-     * @param string $table
      *
      * @return string
      */
-    public static function getColumn($column, array $where, $table = null);
+    public static function getColumn($column, array $where);
 
     /**
      * Create fresh fixture data set everytime this method is run, deleting the old value and recreating it.

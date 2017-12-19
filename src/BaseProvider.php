@@ -54,14 +54,13 @@ abstract class BaseProvider implements APIDecoratorInterface
 
     /**
      * @param array $where
-     * @param string|null $table
      *
      * @return array
      */
-    public static function getSingle(array $where, $table = null)
+    public static function getSingle(array $where)
     {
-        $table = self::getTable($table);
-        self::select($table, $where);
+        self::ensureBaseTable();
+        self::select($where, static::getBaseTable());
 
         $data = [];
         foreach (static::getDataMapping() as $name => $dbColumnName) {
@@ -74,36 +73,36 @@ abstract class BaseProvider implements APIDecoratorInterface
     /**
      * @param string $column
      * @param array $where
-     * @param string|null $table
      *
      * @return string
      */
-    public static function getColumn($column, array $where, $table = null)
+    public static function getColumn($column, array $where)
     {
-        $table = self::getTable($table);
-        self::select($table, $where);
+        self::ensureBaseTable();
+        $table = static::getBaseTable();
+        self::select($where, $table);
 
-        return static::getValue($column);
+        return self::getValue($column);
     }
 
     /**
      * Get the value of a column out of the keystore.
      * Depends on getBaseTable.
      *
-     * @param string $column The column name.
-     * @param mixed $key
+     * @param string $key The column name.
+     * @param string|null $table The table name.
      *
      * @return string
      */
     public static function getValue($key)
     {
-        self::ensureBaseTable();
+        $mapping = self::getFieldMapping($key);
 
         return static::getAPI()->get('keyStore')
             ->getKeyword(
                 static::getBaseTable() .
                 '.' .
-                self::getFieldMapping($key)
+                $mapping
             );
     }
 
@@ -113,14 +112,12 @@ abstract class BaseProvider implements APIDecoratorInterface
      * @param array $where The selection criteria.
      * @param string|null $table The table to select from.
      *
-     * @return $this
+     * @return void
      */
     protected static function select(array $where, $table = null)
     {
         $table = self::getTable($table);
         static::getAPI()->select($table, self::resolveDataFieldMappings($where));
-
-        return self;
     }
 
     /**
@@ -172,11 +169,10 @@ abstract class BaseProvider implements APIDecoratorInterface
      *
      * @return void
      */
-    protected static function truncate()
+    protected static function truncate($table = null)
     {
-        self::ensureBaseTable();
-
-        static::getAPI()->delete(static::getBaseTable(), [
+        $table = self::getTable($table);
+        static::getAPI()->delete($table, [
             'id' => '!NULL'
         ]);
     }
@@ -265,11 +261,14 @@ abstract class BaseProvider implements APIDecoratorInterface
      */
     protected static function getFieldMapping($key)
     {
-        if (! isset(self::getDataMapping()[$key])) {
-            throw new Exception("No data mapping provided for key $key");
+        $mapping = static::getDataMapping();
+        if (! isset($mapping[$key])) {
+            throw new Exception(
+                "No data mapping provided for key '$key', mapping provided: " . print_r($mapping, true)
+            );
         }
 
-        return self::getDataMapping()[$key];
+        return $mapping[$key];
     }
 
     /**
@@ -277,7 +276,7 @@ abstract class BaseProvider implements APIDecoratorInterface
      */
     protected static function ensureBaseTable()
     {
-        if (! self::getBaseTable()) {
+        if (! static::getBaseTable()) {
             throw new Exception('This call requires the getBaseTable to return the table to operate on.');
         }
     }
@@ -316,7 +315,7 @@ abstract class BaseProvider implements APIDecoratorInterface
      *
      * @return string
      */
-    private function getTable($table)
+    private static function getTable($table)
     {
         if (! $table) {
             return static::getBaseTable();
