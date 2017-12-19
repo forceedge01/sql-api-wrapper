@@ -47,7 +47,7 @@ abstract class BaseDataMod extends BaseProvider
     /**
      * @return Context\Interfaces\APIInterface
      */
-    public function getAPI()
+    public static function getAPI()
     {
         if (! self::$sqlApi) {
             self::$sqlApi = new Context\API(
@@ -76,7 +76,7 @@ class UserDataMod extends BaseDataMod
      *
      * @return string
      */
-    public function getBaseTable()
+    public static function getBaseTable()
     {
         return 'User';
     }
@@ -86,7 +86,7 @@ class UserDataMod extends BaseDataMod
      *
      * @return array
      */
-    public function getDataMapping()
+    public static function getDataMapping()
     {
         return [
             'id' => 'user_id',
@@ -107,10 +107,10 @@ class UserDataMod extends BaseDataMod
      *
      * @return void
      */
-    public function updateStatusById($status, $userId)
+    public static function updateStatusById($status, $userId)
     {
-        $this->update($this->getBaseTable(), [
-            'status' => $this->subSelect('Status', 'id', ['name' => $status])
+        self::update(self::getBaseTable(), [
+            'status' => self::subSelect('Status', 'id', ['name' => $status])
         ], [
             'id' => $userId
         ])
@@ -134,16 +134,6 @@ use Exception;
 class FeatureContext
 {
     /**
-     * Setup object.
-     */
-    public function __construct()
-    {
-        // This logic can be wrapper in a convenience method.
-        $api = ...;
-        $this->userDataMod = new UserDataMod($api);
-    }
-
-    /**
      * @Given I have a User
      *
      * Use the API to create a fixture user.
@@ -154,7 +144,7 @@ class FeatureContext
         // The name will be set to 'Wahab Qureshi'. The rest of the fields if required by the database will be autofilled
         // with fixture data, if they are nullable, null will be stored.
         // If the record exists already, it will be deleted based on the 'name' key provided.
-        $this->userDataMod->createFixture([
+        UserDataMod::createFixture([
             'name' => 'Wahab Qureshi'
         ], 'name');
     }
@@ -167,15 +157,15 @@ class FeatureContext
     public function create10Users($count)
     {
         // Save this user's session.
-        $this->userDataMod->saveSession('id');
+        UserDataMod::saveSession('id');
 
         // Create 10 random users.
         for($i = 0; $i < 10; $i++) {
-            $this->userDataMod->createFixture();
+            UserDataMod::createFixture();
         }
 
         // Restore session of the user we created above.
-        $this->userDataMod->restoreSession();
+        UserDataMod::restoreSession();
     }
 
     /**
@@ -191,10 +181,10 @@ class FeatureContext
 
         // Retrieve data created, this will reference the user created by 'Given I have a User' as the session was preserved
         // in the following step definition.
-        $id = $this->userDataMod->getValue('id');
-        $name = $this->userDataMod->getValue('name');
-        $dateOfBirth = $this->userDataMod->getValue('dateOfBirth');
-        $gender = $this->userDataMod->getValue('gender');
+        $id = UserDataMod::getValue('id');
+        $name = UserDataMod::getValue('name');
+        $dateOfBirth = UserDataMod::getValue('dateOfBirth');
+        $gender = UserDataMod::getValue('gender');
 
         // Assert that data is on the page.
         $this->assertSession()->assertTextOnPage($id);

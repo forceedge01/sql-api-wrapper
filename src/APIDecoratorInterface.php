@@ -16,6 +16,20 @@ interface APIDecoratorInterface
     public static function getAPI();
 
     /**
+     * Returns the base table to interact with.
+     *
+     * @return string
+     */
+    public static function getBaseTable();
+
+    /**
+     * Returns the data mapping for the base table.
+     *
+     * @return array
+     */
+    public static function getDataMapping();
+
+    /**
      * Inserts seed data if method 'setupSeedData' exists on calling class.
      *
      * @return void

@@ -4,8 +4,6 @@ namespace Genesis\SQLExtensionWrapper;
 
 use Exception;
 
-use Genesis\SQLExtension\Context;
-
 /**
 * This class serves as a Decorator for the Genesis API class.
 * To use this class effectively, create separate classes for each of your tables and extend off this class.
@@ -16,27 +14,6 @@ abstract class BaseProvider implements APIDecoratorInterface
      * @var array The saved session storage.
      */
     private static $savedSession;
-
-    /**
-     * Override this method to inject your own version of the API.
-     *
-     * @return Context\Interfaces\APIInterface
-     */
-    abstract public static function getAPI();
-
-    /**
-     * Returns the base table to interact with.
-     *
-     * @return string
-     */
-    abstract public static function getBaseTable();
-
-    /**
-     * Returns the data mapping for the base table.
-     *
-     * @return array
-     */
-    abstract public static function getDataMapping();
 
     /**
      * Couple with getValue() to get the resulting values out.
