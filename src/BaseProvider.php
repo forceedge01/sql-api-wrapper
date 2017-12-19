@@ -16,93 +16,6 @@ abstract class BaseProvider implements APIDecoratorInterface
     private static $savedSession;
 
     /**
-     * Couple with getValue() to get the resulting values out.
-     *
-     * @param string $table The table to select from.
-     * @param array $where The selection criteria.
-     *
-     * @return $this
-     */
-    public static function select($table, array $where)
-    {
-        static::getAPI()->select($table, self::resolveDataFieldMappings($where));
-
-        return $this;
-    }
-
-    /**
-     * @param string $table
-     * @param array $where
-     *
-     * @return array
-     */
-    public static function getSingle($table, array $where)
-    {
-        self::select($table, $where);
-
-        $data = [];
-        foreach (static::getDataMapping() as $name => $dbColumnName) {
-            $data[$name] = self::getValue($name);
-        }
-
-        return $data;
-    }
-
-    /**
-     * @param string $column
-     * @param string $table
-     * @param array $where
-     *
-     * @return string
-     */
-    public static function getColumn($column, $table, array $where)
-    {
-        self::select($table, $where);
-
-        return static::getValue($column);
-    }
-
-    /**
-     * @param string $table The table to insert into.
-     * @param array $data The data set to insert.
-     *
-     * @return int The insert Id.
-     */
-    public static function insert($table, array $data)
-    {
-        static::getAPI()->insert($table, self::resolveDataFieldMappings($data));
-
-        return static::getAPI()->getLastId();
-    }
-
-    /**
-     * @param string $table The table to select from.
-     * @param array $valus The values data set to update with.
-     * @param array $where The selection criteria.
-     *
-     * @return void
-     */
-    public static function update($table, array $values, array $where)
-    {
-        static::getAPI()->update(
-            $table,
-            self::resolveDataFieldMappings($values),
-            self::resolveDataFieldMappings($where)
-        );
-    }
-
-    /**
-     * @param string $table The table to delete from.
-     * @param array $where The selection criteria.
-     *
-     * @return void
-     */
-    public static function delete($table, array $where)
-    {
-        static::getAPI()->delete($table, static::resolveDataFieldMappings($where));
-    }
-
-    /**
      * Inserts seed data if method 'setupSeedData' exists on calling class.
      *
      * @return void
@@ -112,42 +25,6 @@ abstract class BaseProvider implements APIDecoratorInterface
         if (method_exists(get_called_class(), 'setupSeedData')) {
             self::insertSeedData(static::setupSeedData());
         }
-    }
-
-    /**
-     * Get the value of a column out of the keystore.
-     * Depends on getBaseTable.
-     *
-     * @param string $column The column name.
-     * @param mixed $key
-     *
-     * @return string
-     */
-    public static function getValue($key)
-    {
-        self::ensureBaseTable();
-
-        return static::getAPI()->get('keyStore')
-            ->getKeyword(
-                static::getBaseTable() .
-                '.' .
-                self::getFieldMapping($key)
-            );
-    }
-
-    /**
-     * Truncates a table based on the value provided by getBaseTable and assumes that the table has the column id.
-     * Depends on getBaseTable.
-     *
-     * @return void
-     */
-    public static function truncate()
-    {
-        self::ensureBaseTable();
-
-        static::getAPI()->delete(static::getBaseTable(), [
-            'id' => '!NULL'
-        ]);
     }
 
     /**
@@ -176,6 +53,135 @@ abstract class BaseProvider implements APIDecoratorInterface
     }
 
     /**
+     * @param array $where
+     * @param string|null $table
+     *
+     * @return array
+     */
+    public static function getSingle(array $where, $table = null)
+    {
+        $table = self::getTable($table);
+        self::select($table, $where);
+
+        $data = [];
+        foreach (static::getDataMapping() as $name => $dbColumnName) {
+            $data[$name] = self::getValue($name);
+        }
+
+        return $data;
+    }
+
+    /**
+     * @param string $column
+     * @param array $where
+     * @param string|null $table
+     *
+     * @return string
+     */
+    public static function getColumn($column, array $where, $table = null)
+    {
+        $table = self::getTable($table);
+        self::select($table, $where);
+
+        return static::getValue($column);
+    }
+
+    /**
+     * Get the value of a column out of the keystore.
+     * Depends on getBaseTable.
+     *
+     * @param string $column The column name.
+     * @param mixed $key
+     *
+     * @return string
+     */
+    public static function getValue($key)
+    {
+        self::ensureBaseTable();
+
+        return static::getAPI()->get('keyStore')
+            ->getKeyword(
+                static::getBaseTable() .
+                '.' .
+                self::getFieldMapping($key)
+            );
+    }
+
+    /**
+     * Couple with getValue() to get the resulting values out.
+     *
+     * @param array $where The selection criteria.
+     * @param string|null $table The table to select from.
+     *
+     * @return $this
+     */
+    protected static function select(array $where, $table = null)
+    {
+        $table = self::getTable($table);
+        static::getAPI()->select($table, self::resolveDataFieldMappings($where));
+
+        return self;
+    }
+
+    /**
+     * @param array $data The data set to insert.
+     * @param string|null $table The table to insert into.
+     *
+     * @return int The insert Id.
+     */
+    protected static function insert(array $data, $table = null)
+    {
+        $table = self::getTable($table);
+        static::getAPI()->insert($table, self::resolveDataFieldMappings($data));
+
+        return static::getAPI()->getLastId();
+    }
+
+    /**
+     * @param array $values The values data set to update with.
+     * @param array $where The selection criteria.
+     * @param string|null $table The table to select from.
+     *
+     * @return void
+     */
+    protected static function update(array $values, array $where, $table = null)
+    {
+        $table = self::getTable($table);
+        static::getAPI()->update(
+            $table,
+            self::resolveDataFieldMappings($values),
+            self::resolveDataFieldMappings($where)
+        );
+    }
+
+    /**
+     * @param array $where The selection criteria.
+     * @param string|null $table The table to delete from.
+     *
+     * @return void
+     */
+    protected static function delete(array $where, $table = null)
+    {
+        $table = self::getTable($table);
+        static::getAPI()->delete($table, static::resolveDataFieldMappings($where));
+    }
+
+    /**
+     * Truncates a table based on the value provided by getBaseTable and assumes that the table has the column id.
+     * Depends on getBaseTable.
+     *
+     * @return void
+     */
+    protected static function truncate()
+    {
+        self::ensureBaseTable();
+
+        static::getAPI()->delete(static::getBaseTable(), [
+            'id' => '!NULL'
+        ]);
+    }
+
+    /**
      * Construct an external reference clause for the query.
      * Note: This will only work with the first result returned.
      *
@@ -193,7 +199,7 @@ abstract class BaseProvider implements APIDecoratorInterface
      *
      * @return string The subSelect external ref query.
      */
-    public static function subSelect($table, $column, array $where)
+    protected static function subSelect($table, $column, array $where)
     {
         $extRefWhereArray = [];
         foreach ($where as $column => $value) {
@@ -300,5 +306,22 @@ abstract class BaseProvider implements APIDecoratorInterface
 
             static::getAPI()->insert($table, $individualSeedData);
         }
+    }
+
+    /**
+     * Get the table to interact with, if the table value is provided then use that. Otherwise
+     * get the table value defined by the calling class.
+     *
+     * @param string $table
+     *
+     * @return string
+     */
+    private function getTable($table)
+    {
+        if (! $table) {
+            return static::getBaseTable();
+        }
+
+        return $table;
     }
 }
