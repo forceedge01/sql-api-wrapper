@@ -274,22 +274,6 @@ abstract class BaseProvider implements APIDecoratorInterface
     }
 
     /**
-     * Get the field mapping for a column.
-     *
-     * @param string $key The key to get the mapping for.
-     *
-     * @return string
-     */
-    protected static function getFieldMapping($key)
-    {
-        if (! isset(self::getDataMapping()[$key])) {
-            throw new Exception("No data mapping provided for key $key");
-        }
-
-        return self::getDataMapping()[$key];
-    }
-
-    /**
      * Convenience method to get a required index value out of array.
      *
      * @param array $data The data to check.
@@ -297,7 +281,7 @@ abstract class BaseProvider implements APIDecoratorInterface
      *
      * @return mixed Whatever the data index contains.
      */
-    protected static function getRequiredData(array $data, $key)
+    public static function getRequiredData(array $data, $key)
     {
         if (! array_key_exists($key, $data)) {
             throw new Exception("Expect to have key '$key' provided.");
@@ -316,13 +300,29 @@ abstract class BaseProvider implements APIDecoratorInterface
      *
      * @return mixed Whatever the data index contains.
      */
-    protected static function getOptionalData(array $data, $key, $default = null)
+    public static function getOptionalData(array $data, $key, $default = null)
     {
         if (! array_key_exists($key, $data)) {
             return $default;
         }
 
         return $data[$key];
+    }
+
+    /**
+     * Get the field mapping for a column.
+     *
+     * @param string $key The key to get the mapping for.
+     *
+     * @return string
+     */
+    protected static function getFieldMapping($key)
+    {
+        if (! isset(self::getDataMapping()[$key])) {
+            throw new Exception("No data mapping provided for key $key");
+        }
+
+        return self::getDataMapping()[$key];
     }
 
     /**
