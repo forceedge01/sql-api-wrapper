@@ -47,31 +47,24 @@ interface APIDecoratorInterface
     public static function getValue($column);
 
     /**
-     * Truncates a table based on the value provided by getBaseTable and assumes that the table has the column id.
-     *
-     * @return void
-     */
-    public static function truncate();
-
-    /**
      * Get a single record out mapped to your defined mapping. For single columns use
      * getColumn which is better in performance.
      *
-     * @param string $table
      * @param array $where
+     * @param string $table
      *
      * @return array
      */
-    public static function getSingle($table, array $where);
+    public static function getSingle(array $where, $table = null);
 
     /**
      * @param string $column
-     * @param string $table
      * @param array $where
+     * @param string $table
      *
      * @return string
      */
-    public static function getColumn($column, $table, array $where);
+    public static function getColumn($column, array $where, $table = null);
 
     /**
      * Create fresh fixture data set everytime this method is run, deleting the old value and recreating it.
@@ -84,26 +77,6 @@ interface APIDecoratorInterface
      * @return int The last insert Id of the fixture data.
      */
     public static function createFixture(array $data = [], $uniqueColumn = null);
-
-    /**
-     * Construct an external reference clause for the query.
-     * Note: This will only work with the first result returned.
-     *
-     * @param string $table The table to select from.
-     * @param string $column The column to select within the table.
-     * @param array $where The array to filter the values from.
-     *
-     * @example Example usage: Update postcode where address Id is provided.
-     *
-     * $this->update('Address', [
-     *     'postCodeId' => class::subSelect('PostCode', 'id', ['code'=> 'B237QQ'])
-     * ], [
-     *     'id' => $addressId
-     * ]);
-     *
-     * @return string The subSelect external ref query.
-     */
-    public static function subSelect($table, $column, array $where);
 
     /**
      * @param string $primaryKey The unique primary key that will reference the current session.
