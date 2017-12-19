@@ -12,7 +12,7 @@
     ],
 	"require": {
 		"genesis/behat-sql-extension": "~5.0",
-        "php": "~5.4|~7.0"
+        "php": "~5.6|~7.0"
 	},
 	"require-dev": {
         "phpunit/phpunit": "~5.2"
