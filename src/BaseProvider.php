@@ -110,26 +110,24 @@ abstract class BaseProvider implements APIDecoratorInterface
      * Couple with getValue() to get the resulting values out.
      *
      * @param array $where The selection criteria.
-     * @param string|null $table The table to select from.
      *
      * @return void
      */
-    protected static function select(array $where, $table = null)
+    protected static function select(array $where)
     {
-        $table = self::getTable($table);
-        static::getAPI()->select($table, self::resolveDataFieldMappings($where));
+        self::ensureBaseTable();
+        static::getAPI()->select(static::getBaseTable(), self::resolveDataFieldMappings($where));
     }
 
     /**
      * @param array $data The data set to insert.
-     * @param string|null $table The table to insert into.
      *
      * @return int The insert Id.
      */
-    protected static function insert(array $data, $table = null)
+    protected static function insert(array $data)
     {
-        $table = self::getTable($table);
-        static::getAPI()->insert($table, self::resolveDataFieldMappings($data));
+        self::ensureBaseTable();
+        static::getAPI()->insert(static::getBaseTable(), self::resolveDataFieldMappings($data));
 
         return static::getAPI()->getLastId();
     }
@@ -137,15 +135,15 @@ abstract class BaseProvider implements APIDecoratorInterface
     /**
      * @param array $values The values data set to update with.
      * @param array $where The selection criteria.
-     * @param string|null $table The table to select from.
      *
      * @return void
      */
-    protected static function update(array $values, array $where, $table = null)
+    protected static function update(array $values, array $where)
     {
-        $table = self::getTable($table);
+        self::ensureBaseTable();
+
         static::getAPI()->update(
-            $table,
+            static::getBaseTable(),
             self::resolveDataFieldMappings($values),
             self::resolveDataFieldMappings($where)
         );
@@ -153,19 +151,20 @@ abstract class BaseProvider implements APIDecoratorInterface
 
     /**
      * @param array $where The selection criteria.
-     * @param string|null $table The table to delete from.
      *
      * @return void
      */
-    protected static function delete(array $where, $table = null)
+    protected static function delete(array $where)
     {
-        $table = self::getTable($table);
-        static::getAPI()->delete($table, static::resolveDataFieldMappings($where));
+        self::ensureBaseTable();
+        static::getAPI()->delete(static::getBaseTable(), static::resolveDataFieldMappings($where));
     }
 
     /**
      * Truncates a table based on the value provided by getBaseTable and assumes that the table has the column id.
      * Depends on getBaseTable.
+     *
+     * @param null|mixed $table
      *
      * @return void
      */
@@ -178,6 +177,8 @@ abstract class BaseProvider implements APIDecoratorInterface
     }
 
     /**
+     * TODO: take the reference of a dataMod as the table, and resolve datamapping from it.
+     *
      * Construct an external reference clause for the query.
      * Note: This will only work with the first result returned.
      *
@@ -198,13 +199,13 @@ abstract class BaseProvider implements APIDecoratorInterface
     protected static function subSelect($table, $column, array $where)
     {
         $extRefWhereArray = [];
-        foreach ($where as $column => $value) {
-            $extRefWhereArray[] = sprintf('%s.%s', $column, $value);
+        foreach ($where as $whereColumn => $value) {
+            $extRefWhereArray[] = sprintf('%s:%s', $whereColumn, $value);
         }
 
         $extRefWhere = implode(',', $extRefWhereArray);
 
-        return sprint('[%s.%s|%s]', $table, $column, $extRefWhere);
+        return sprintf('[%s.%s|%s]', $table, $column, $extRefWhere);
     }
 
     /**

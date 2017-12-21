@@ -1,1 +1,5 @@
 vendor
+.config
+.bash_history
+.cache
+.local

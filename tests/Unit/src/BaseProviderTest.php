@@ -7,6 +7,7 @@ use Genesis\SQLExtension\Context\Interfaces\KeyStoreInterface;
 use Genesis\SQLExtensionWrapper\BaseProvider;
 use PHPUnit_Framework_TestCase;
 use ReflectionClass;
+use ReflectionProperty;
 
 // This violates PSR, but since this is not production code and gives us a lot more in return, we shall keep it!
 class TestClass extends BaseProvider
@@ -58,6 +59,7 @@ class BaseProviderTest extends PHPUnit_Framework_TestCase
         TestClass::$api = $this->createMock(APIInterface::class);
 
         $this->reflection = new ReflectionClass(TestClass::class);
+        // $this->testObject = $this->reflection->newInstance();
     }
 
     /**
@@ -110,6 +112,63 @@ class BaseProviderTest extends PHPUnit_Framework_TestCase
 
         // Execute
         TestClass::getSingle($where);
+    }
+
+    /**
+     * testCreateFixture Test that createFixture executes as expected.
+     */
+    public function testCreateFixtureWithoutUniqueKey()
+    {
+        // Prepare / Mock
+        $data = [
+            'name' => 'Abdul'
+        ];
+        $lastId = 5;
+
+        TestClass::$api->expects($this->never())
+            ->method('delete');
+        TestClass::$api->expects($this->once())
+            ->method('insert')
+            ->with('test.table', ['forename' => 'Abdul']);
+        TestClass::$api->expects($this->once())
+            ->method('getLastId')
+            ->willReturn($lastId);
+
+        // Execute
+        $result = TestClass::createFixture($data);
+
+        // Assert Result
+        self::assertEquals($lastId, $result);
+    }
+
+    /**
+     * testCreateFixture Test that createFixture executes as expected.
+     */
+    public function testCreateFixtureWithUniqueKey()
+    {
+        // Prepare / Mock
+        $uniqueKey = 'name';
+        $data = [
+            'id' => 20,
+            'name' => 'Abdul'
+        ];
+        $lastId = 5;
+
+        TestClass::$api->expects($this->once())
+            ->method('delete')
+            ->with('test.table', ['forename' => 'Abdul']);
+        TestClass::$api->expects($this->once())
+            ->method('insert')
+            ->with('test.table', ['id' => 20, 'forename' => 'Abdul']);
+        TestClass::$api->expects($this->once())
+            ->method('getLastId')
+            ->willReturn($lastId);
+
+        // Execute
+        $result = TestClass::createFixture($data, $uniqueKey);
+
+        // Assert Result
+        self::assertEquals($lastId, $result);
     }
 
     /**
@@ -197,24 +256,7 @@ class BaseProviderTest extends PHPUnit_Framework_TestCase
     /**
      * testSelect Test that select executes as expected.
      */
-    public function testSelectWithTable()
-    {
-        $table = 'User';
-        $where = ['dateOfBirth' => '10-05-1989'];
-
-        // Prepare / Mock
-        TestClass::$api->expects($this->once())
-            ->method('select')
-            ->with($table, ['dob' => '10-05-1989']);
-
-        // Execute
-        $this->invokeMethod('select', [$where, $table]);
-    }
-
-    /**
-     * testSelect Test that select executes as expected.
-     */
-    public function testSelectWithoutTable()
+    public function testSelect()
     {
         $where = ['id' => 5];
 
@@ -230,38 +272,7 @@ class BaseProviderTest extends PHPUnit_Framework_TestCase
     /**
      * testInsert Test that insert executes as expected.
      */
-    public function testInsertWithTable()
-    {
-        // Prepare / Mock
-        $data = [
-            'name' => 'Abdul Wahab Qureshi',
-            'dateOfBirth' => '10-05-1989'
-        ];
-        $table = 'User';
-        $lastId = 3434;
-
-        // Prepare / Mock
-        TestClass::$api->expects($this->once())
-            ->method('insert')
-            ->with($table, [
-                'forename' => 'Abdul Wahab Qureshi',
-                'dob' => '10-05-1989'
-            ]);
-        TestClass::$api->expects($this->once())
-            ->method('getLastId')
-            ->willReturn($lastId);
-
-        // Execute
-        $result = $this->invokeMethod('insert', [$data, $table]);
-
-        // Assert Result
-        self::assertEquals($lastId, $result);
-    }
-
-    /**
-     * testInsert Test that insert executes as expected.
-     */
-    public function testInsertWithoutTable()
+    public function testInsert()
     {
         // Prepare / Mock
         $data = [
@@ -292,35 +303,7 @@ class BaseProviderTest extends PHPUnit_Framework_TestCase
     /**
      * testUpdate Test that update executes as expected.
      */
-    public function testUpdateWithTable()
-    {
-        // Prepare / Mock
-        $values = [
-            'name' => 'Abdul Wahab Qureshi',
-            'dateOfBirth' => '10-05-1989'
-        ];
-        $where = [
-            'name' => 'Qureshi'
-        ];
-        $table = 'User';
-
-        TestClass::$api->expects($this->once())
-            ->method('update')
-            ->with($table, [
-                'forename' => 'Abdul Wahab Qureshi',
-                'dob' => '10-05-1989'
-            ], [
-                'forename' => 'Qureshi'
-            ]);
-
-        // Execute
-        $this->invokeMethod('update', [$values, $where, $table]);
-    }
-
-    /**
-     * testUpdate Test that update executes as expected.
-     */
-    public function testUpdateWithoutTable()
+    public function testUpdate()
     {
         // Prepare / Mock
         $values = [
@@ -346,49 +329,100 @@ class BaseProviderTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * testCreateFixture Test that createFixture executes as expected.
+     * testDelete Test that delete executes as expected.
      */
-    public function testCreateFixture()
+    public function testDelete()
+    {
+        // Prepare / Mock
+        $where = ['name' => 'Jackie', 'id' => 20];
+
+        TestClass::$api->expects($this->once())
+            ->method('delete')
+            ->with('test.table', [
+                'forename' => 'Jackie',
+                'id' => 20
+            ]);
+
+        // Execute
+        $this->invokeMethod('delete', [$where]);
+    }
+
+    /**
+     * testTruncate Test that truncate executes as expected.
+     */
+    public function testTruncateWithTable()
+    {
+        // Prepare / Mock
+        $table = 'User';
+
+        TestClass::$api->expects($this->once())
+            ->method('delete')
+            ->with('User', [
+                'id' => '!NULL'
+            ]);
+
+        // Execute
+        $this->invokeMethod('truncate', [$table]);
+    }
+
+    /**
+     * testSubSelect Test that subSelect executes as expected.
+     */
+    public function testSubSelect()
+    {
+        // Prepare / Mock
+        $table = 'User';
+        $column = 'email';
+        $where = ['name' => 'Abdul', 'dob' => '10-05-1989'];
+
+        // Execute
+        $result = $this->invokeMethod('subSelect', [$table, $column, $where]);
+
+        // Assert Result
+        self::assertEquals('[User.email|name:Abdul,dob:10-05-1989]', $result);
+    }
+
+    /**
+     * testSaveSession Test that saveSession executes as expected.
+     */
+    public function testSaveSession()
+    {
+        // Prepare / Mock
+        $primaryKey = 'id';
+
+        // Value of the id column will be resolved.
+        // When the table is not provided, the mapping is enforced.
+        $keyStoreMock = $this->createMock(KeyStoreInterface::class);
+        $keyStoreMock->expects($this->at(0))
+            ->method('getKeyword')
+            ->with('test.table.id')
+            ->willReturn(55);
+        TestClass::$api->expects($this->once())
+            ->method('get')
+            ->with('keyStore')
+            ->willReturn($keyStoreMock);
+
+        // Execute
+        TestClass::saveSession($primaryKey);
+
+        // Access the session value saved.
+        $result = $this->getPrivatePropertyValue('savedSession');
+
+        // Assert Result
+        self::assertEquals([TestClass::class => ['key' => 'id', 'value' => 55]], $result);
+    }
+
+    /**
+     * testRestoreSession Test that restoreSession executes as expected.
+     */
+    public function testRestoreSession()
     {
         $this->markTestIncomplete('This test has not been implemented yet.');
         // Prepare / Mock
         //nmock
 
         // Execute
-        $result = $this->testObject->createFixture();
-
-        // Assert Result
-        self::assert();
-    }
-
-    /**
-     * testDelete Test that delete executes as expected.
-     */
-    public function testDeleteWithTable()
-    {
-        $this->markTestIncomplete('This test has not been implemented yet.');
-        // Prepare / Mock
-        $where = [];
-        $table = '';
-
-        // Execute
-        $result = $this->invokeMethod('delete', [$where, $table]);
-
-        // Assert Result
-        self::assert();
-    }
-
-    /**
-     * testDelete Test that delete executes as expected.
-     */
-    public function testDeleteWithoutTable()
-    {
-        $this->markTestIncomplete('This test has not been implemented yet.');
-        // Prepare / Mock
-        $where = [];
-
-        // Execute
-        $result = $this->invokeMethod('delete', [$where]);
+        $result = $this->testObject->restoreSession();
 
         // Assert Result
         self::assert();
@@ -411,102 +445,6 @@ class BaseProviderTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * testTruncate Test that truncate executes as expected.
-     */
-    public function testTruncate()
-    {
-        $this->markTestIncomplete('This test has not been implemented yet.');
-        // Prepare / Mock
-        //nmock
-
-        // Execute
-        $result = $this->testObject->truncate();
-
-        // Assert Result
-        self::assert();
-    }
-
-    /**
-     * testSubSelect Test that subSelect executes as expected.
-     */
-    public function testSubSelect()
-    {
-        $this->markTestIncomplete('This test has not been implemented yet.');
-        // Prepare / Mock
-        //nmock
-
-        // Execute
-        $result = $this->testObject->subSelect();
-
-        // Assert Result
-        self::assert();
-    }
-
-    /**
-     * testSaveSession Test that saveSession executes as expected.
-     */
-    public function testSaveSession()
-    {
-        $this->markTestIncomplete('This test has not been implemented yet.');
-        // Prepare / Mock
-        //nmock
-
-        // Execute
-        $result = $this->testObject->saveSession();
-
-        // Assert Result
-        self::assert();
-    }
-
-    /**
-     * testRestoreSession Test that restoreSession executes as expected.
-     */
-    public function testRestoreSession()
-    {
-        $this->markTestIncomplete('This test has not been implemented yet.');
-        // Prepare / Mock
-        //nmock
-
-        // Execute
-        $result = $this->testObject->restoreSession();
-
-        // Assert Result
-        self::assert();
-    }
-
-    /**
-     * testGetRequiredData Test that getRequiredData executes as expected.
-     */
-    public function testGetRequiredData()
-    {
-        $this->markTestIncomplete('This test has not been implemented yet.');
-        // Prepare / Mock
-        //nmock
-
-        // Execute
-        $result = $this->testObject->getRequiredData();
-
-        // Assert Result
-        self::assert();
-    }
-
-    /**
-     * testGetOptionalData Test that getOptionalData executes as expected.
-     */
-    public function testGetOptionalData()
-    {
-        $this->markTestIncomplete('This test has not been implemented yet.');
-        // Prepare / Mock
-        //nmock
-
-        // Execute
-        $result = $this->testObject->getOptionalData();
-
-        // Assert Result
-        self::assert();
-    }
-
-    /**
      * @param string $method The method to invoke.
      * @param array $args The arguments to pass to the method.
      *
@@ -518,5 +456,18 @@ class BaseProviderTest extends PHPUnit_Framework_TestCase
         $reflectionMethod->setAccessible(true);
 
         return $reflectionMethod->invokeArgs($this->testObject, $args);
+    }
+
+    /**
+     * @param string $property
+     *
+     * @return mixed
+     */
+    private function getPrivatePropertyValue($property)
+    {
+        $reflectionProperty = new ReflectionProperty(BaseProvider::class, 'savedSession');
+        $reflectionProperty->setAccessible(true);
+
+        return $reflectionProperty->getValue();
     }
 }
