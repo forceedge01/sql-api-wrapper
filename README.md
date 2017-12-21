@@ -1,4 +1,4 @@
-SQL API Wrapper [ ![Codeship Status for forceedge01/sql-api-wrapper](https://app.codeship.com/projects/96302210-ad45-0135-72c6-56f00403434d/status?branch=master)](https://app.codeship.com/projects/257181)
+# SQL API Wrapper [ ![Codeship Status for forceedge01/sql-api-wrapper](https://app.codeship.com/projects/96302210-ad45-0135-72c6-56f00403434d/status?branch=master)](https://app.codeship.com/projects/257181)
 =================
 
 This wrapper provides with powerful tools around the [behat-sql-extension](https://github.com/forceedge01/behat-sql-extension) API class. Methods provided:
@@ -210,3 +210,29 @@ class FeatureContext
         }
     }
 }
+
+## Development
+
+To get started with development of this project:
+
+### Deployer https://github.com/forceedge01/deployer
+
+When in the root of the project run
+```
+dep use
+```
+
+Then run
+```
+dep project:dev
+```
+
+The above will init and download the vagrant box as the submodule, get the box running, and perform a composer install within.
+
+Running unit tests:
+
+```
+dep project:test
+```
+
+This will run the unit tests within the vagrant box.
