@@ -55,7 +55,7 @@ class BaseProviderTest extends PHPUnit_Framework_TestCase
      */
     public function setUp()
     {
-        TestClass::$api = $this->getMock(APIInterface::class);
+        TestClass::$api = $this->createMock(APIInterface::class);
 
         $this->reflection = new ReflectionClass(TestClass::class);
     }
@@ -71,7 +71,7 @@ class BaseProviderTest extends PHPUnit_Framework_TestCase
         $forename = 'Abdul Wahab';
         $dateOfBirth = '10-05-1989';
 
-        $keyStoreMock = $this->getMock(KeyStoreInterface::class);
+        $keyStoreMock = $this->createMock(KeyStoreInterface::class);
         $keyStoreMock->expects($this->at(0))
             ->method('getKeyword')
             ->with('test.table.id')
@@ -123,7 +123,7 @@ class BaseProviderTest extends PHPUnit_Framework_TestCase
         $where = ['name' => 'Abdul Wahab'];
 
         // Value of the id column will be resolved.
-        $keyStoreMock = $this->getMock(KeyStoreInterface::class);
+        $keyStoreMock = $this->createMock(KeyStoreInterface::class);
         $keyStoreMock->expects($this->at(0))
             ->method('getKeyword')
             ->with('test.table.id')
@@ -156,7 +156,7 @@ class BaseProviderTest extends PHPUnit_Framework_TestCase
 
         // Value of the id column will be resolved.
         // When the table is not provided, the mapping is enforced.
-        $keyStoreMock = $this->getMock(KeyStoreInterface::class);
+        $keyStoreMock = $this->createMock(KeyStoreInterface::class);
         $keyStoreMock->expects($this->at(0))
             ->method('getKeyword')
             ->with('test.table.forename')
@@ -184,7 +184,7 @@ class BaseProviderTest extends PHPUnit_Framework_TestCase
         $key = 'abc';
 
         // Value of the id column will be resolved.
-        $keyStoreMock = $this->getMock(KeyStoreInterface::class);
+        $keyStoreMock = $this->createMock(KeyStoreInterface::class);
         $keyStoreMock->expects($this->never())
             ->method('getKeyword');
         TestClass::$api->expects($this->never())
