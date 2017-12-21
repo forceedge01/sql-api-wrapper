@@ -2,9 +2,9 @@
 
 namespace Genesis\SQLExtensionWrapper\Tests;
 
-use Genesis\SQLExtensionWrapper\BaseProvider;
 use Genesis\SQLExtension\Context\Interfaces\APIInterface;
 use Genesis\SQLExtension\Context\Interfaces\KeyStoreInterface;
+use Genesis\SQLExtensionWrapper\BaseProvider;
 use PHPUnit_Framework_TestCase;
 use ReflectionClass;
 
@@ -55,10 +55,9 @@ class BaseProviderTest extends PHPUnit_Framework_TestCase
      */
     public function setUp()
     {
-        TestClass::$api = $this->createMock(APIInterface::class);
+        TestClass::$api = $this->getMock(APIInterface::class);
 
         $this->reflection = new ReflectionClass(TestClass::class);
-        $this->testObject = $this->reflection->newInstanceArgs($this->dependencies);
     }
 
     /**
@@ -72,7 +71,7 @@ class BaseProviderTest extends PHPUnit_Framework_TestCase
         $forename = 'Abdul Wahab';
         $dateOfBirth = '10-05-1989';
 
-        $keyStoreMock = $this->createMock(KeyStoreInterface::class);
+        $keyStoreMock = $this->getMock(KeyStoreInterface::class);
         $keyStoreMock->expects($this->at(0))
             ->method('getKeyword')
             ->with('test.table.id')
@@ -92,7 +91,7 @@ class BaseProviderTest extends PHPUnit_Framework_TestCase
             ->willReturn($keyStoreMock);
 
         // Execute
-        $result = $this->testObject::getSingle($where);
+        $result = TestClass::getSingle($where);
 
         // Assert Result
         self::assertCount(3, $result);
@@ -110,7 +109,7 @@ class BaseProviderTest extends PHPUnit_Framework_TestCase
         $where = ['random' => 20];
 
         // Execute
-        $this->testObject::getSingle($where);
+        TestClass::getSingle($where);
     }
 
     /**
@@ -124,7 +123,7 @@ class BaseProviderTest extends PHPUnit_Framework_TestCase
         $where = ['name' => 'Abdul Wahab'];
 
         // Value of the id column will be resolved.
-        $keyStoreMock = $this->createMock(KeyStoreInterface::class);
+        $keyStoreMock = $this->getMock(KeyStoreInterface::class);
         $keyStoreMock->expects($this->at(0))
             ->method('getKeyword')
             ->with('test.table.id')
@@ -140,7 +139,7 @@ class BaseProviderTest extends PHPUnit_Framework_TestCase
             ->with('test.table', ['forename' => 'Abdul Wahab']);
 
         // Execute
-        $result = $this->testObject::getColumn($column, $where);
+        $result = TestClass::getColumn($column, $where);
 
         // Assert Result
         self::assertEquals($userId, $result);
@@ -157,7 +156,7 @@ class BaseProviderTest extends PHPUnit_Framework_TestCase
 
         // Value of the id column will be resolved.
         // When the table is not provided, the mapping is enforced.
-        $keyStoreMock = $this->createMock(KeyStoreInterface::class);
+        $keyStoreMock = $this->getMock(KeyStoreInterface::class);
         $keyStoreMock->expects($this->at(0))
             ->method('getKeyword')
             ->with('test.table.forename')
@@ -168,7 +167,7 @@ class BaseProviderTest extends PHPUnit_Framework_TestCase
             ->willReturn($keyStoreMock);
 
         // Execute
-        $result = $this->testObject::getValue($key);
+        $result = TestClass::getValue($key);
 
         // Assert Result
         self::assertEquals($expectedResult, $result);
@@ -185,14 +184,14 @@ class BaseProviderTest extends PHPUnit_Framework_TestCase
         $key = 'abc';
 
         // Value of the id column will be resolved.
-        $keyStoreMock = $this->createMock(KeyStoreInterface::class);
+        $keyStoreMock = $this->getMock(KeyStoreInterface::class);
         $keyStoreMock->expects($this->never())
             ->method('getKeyword');
         TestClass::$api->expects($this->never())
             ->method('get');
 
         // Execute
-        $this->testObject::getValue($key);
+        TestClass::getValue($key);
     }
 
     /**
@@ -379,7 +378,6 @@ class BaseProviderTest extends PHPUnit_Framework_TestCase
         self::assert();
     }
 
-
     /**
      * testDelete Test that delete executes as expected.
      */
@@ -518,6 +516,7 @@ class BaseProviderTest extends PHPUnit_Framework_TestCase
     {
         $reflectionMethod = $this->reflection->getMethod($method);
         $reflectionMethod->setAccessible(true);
+
         return $reflectionMethod->invokeArgs($this->testObject, $args);
     }
 }
