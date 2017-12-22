@@ -17,8 +17,7 @@ This wrapper provides with powerful tools around the [behat-sql-extension](https
 
 Note: All methods provided by the wrapper are static, because they have a global state - we don't need to instantiate this wrapper.
 
-Example usage:
-==============
+## Example usage
 
 Creating a DataMod to use in your context files.
 
