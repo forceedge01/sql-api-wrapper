@@ -47,9 +47,7 @@ abstract class BaseProvider implements APIDecoratorInterface
             ));
         }
 
-        static::getAPI()->insert(static::getBaseTable(), self::resolveDataFieldMappings($data));
-
-        return static::getAPI()->getLastId();
+        return self::insert($data);
     }
 
     /**

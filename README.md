@@ -4,6 +4,8 @@ This wrapper provides with powerful tools around the [behat-sql-extension](https
 
 - insertSeedDataIfExists() // Auto fires on construct.
 - createFixture(array $data = [], string $uniqueColumn = null) // Recreates a record for fresh usage.
+- getSingle(array $where) // Returns a single record defined by the mapping.
+- getColumn(string $column, array $where) // Returns a single column value from the database.
 - getValue(string $key) // Get key value based on mapping.
 - truncate() // Truncates a table.
 - subSelect(string $table, string $column, array $where) // Provides the ability to sub select a column for any query.
@@ -162,7 +164,8 @@ class FeatureContext
 
         // Create 10 random users.
         for($i = 0; $i < 10; $i++) {
-            UserDataMod::createFixture();
+            // Store the ids created for these users maybe?
+            $this->userIds[] = UserDataMod::createFixture();
         }
 
         // Restore session of the user we created above.
@@ -180,8 +183,7 @@ class FeatureContext
         // Given I have a User
         // And I have 10 Users
 
-        // Retrieve data created, this will reference the user created by 'Given I have a User' as the session was preserved
-        // in the following step definition.
+        // Retrieve data created, this will reference the user created by 'Given I have a User' as the session was preserved.
         $id = UserDataMod::getValue('id');
         $name = UserDataMod::getValue('name');
         $dateOfBirth = UserDataMod::getValue('dateOfBirth');
