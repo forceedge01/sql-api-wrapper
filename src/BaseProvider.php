@@ -231,8 +231,8 @@ abstract class BaseProvider implements APIDecoratorInterface
         $callingClass = get_called_class();
 
         static::getAPI()->select(static::getBaseTable(), [
-            self::getFieldMapping(self::$savedSession[$callingClass]['key']),
-            self::$savedSession[$callingClass]['value'],
+            self::getFieldMapping(self::$savedSession[$callingClass]['key']) =>
+            self::$savedSession[$callingClass]['value']
         ]);
     }
 
@@ -289,7 +289,7 @@ abstract class BaseProvider implements APIDecoratorInterface
      *
      * @return void
      */
-    private function insertSeedData(array $seedData)
+    private static function insertSeedData(array $seedData)
     {
         if (! $seedData) {
             throw new Exception('Seed data method defined but no value provided.');
@@ -304,7 +304,7 @@ abstract class BaseProvider implements APIDecoratorInterface
                 throw new Exception("Provided data '$individualSeedData' invalid, must be an array.");
             }
 
-            static::getAPI()->insert($table, $individualSeedData);
+            static::getAPI()->insert($table, self::resolveDataFieldMappings($individualSeedData));
         }
     }
 

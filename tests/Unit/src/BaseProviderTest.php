@@ -13,6 +13,7 @@ use ReflectionProperty;
 class TestClass extends BaseProvider
 {
     public static $api;
+    public static $table = 'test.table';
 
     public static function getAPI()
     {
@@ -21,7 +22,7 @@ class TestClass extends BaseProvider
 
     public static function getBaseTable()
     {
-        return 'test.table';
+        return self::$table;
     }
 
     public static function getDataMapping()
@@ -31,6 +32,42 @@ class TestClass extends BaseProvider
             'name' => 'forename',
             'dateOfBirth' => 'dob'
         ];
+    }
+
+    public static function setupSeedData()
+    {
+        return [
+            [
+                'name' => 'Abdul',
+                'dateOfBirth' => '10-05-1989'
+            ],
+            [
+                'name' => 'Wahab'
+            ],
+            [
+                'name' => 'Qureshi'
+            ]
+        ];
+    }
+}
+
+class TestClassNoSeedSetup extends BaseProvider
+{
+    public static $api;
+
+    public static function getAPI()
+    {
+        return $api;
+    }
+
+    public static function getBaseTable()
+    {
+        return null;
+    }
+
+    public static function getDataMapping()
+    {
+        return [];
     }
 }
 
@@ -59,59 +96,51 @@ class BaseProviderTest extends PHPUnit_Framework_TestCase
         TestClass::$api = $this->createMock(APIInterface::class);
 
         $this->reflection = new ReflectionClass(TestClass::class);
-        // $this->testObject = $this->reflection->newInstance();
     }
 
     /**
-     * testGetSingle Test that getSingle executes as expected.
+     * testInsertSeedDataIfExists Test that insertSeedDataIfExists executes as expected.
      */
-    public function testGetSingle()
+    public function testInsertSeedDataIfExists()
     {
         // Prepare / Mock
-        $where = ['name' => 20];
-        $userId = 5;
-        $forename = 'Abdul Wahab';
-        $dateOfBirth = '10-05-1989';
-
-        $keyStoreMock = $this->createMock(KeyStoreInterface::class);
-        $keyStoreMock->expects($this->at(0))
-            ->method('getKeyword')
-            ->with('test.table.id')
-            ->willReturn($userId);
-        $keyStoreMock->expects($this->at(1))
-            ->method('getKeyword')
-            ->with('test.table.forename')
-            ->willReturn($forename);
-        $keyStoreMock->expects($this->at(2))
-            ->method('getKeyword')
-            ->with('test.table.dob')
-            ->willReturn($dateOfBirth);
-
         TestClass::$api->expects($this->exactly(3))
-            ->method('get')
-            ->with('keyStore')
-            ->willReturn($keyStoreMock);
+            ->method('insert');
+
+        TestClass::$api->expects($this->at(0))
+            ->method('insert')
+            ->with('test.table', [
+                'forename' => 'Abdul',
+                'dob' => '10-05-1989'
+            ]);
+        TestClass::$api->expects($this->at(1))
+            ->method('insert')
+            ->with('test.table', [
+                'forename' => 'Wahab'
+            ]);
+        TestClass::$api->expects($this->at(2))
+            ->method('insert')
+            ->with('test.table', [
+                'forename' => 'Qureshi'
+            ]);
 
         // Execute
-        $result = TestClass::getSingle($where);
-
-        // Assert Result
-        self::assertCount(3, $result);
-        self::assertEquals($userId, $result['id']);
-        self::assertEquals($forename, $result['name']);
-        self::assertEquals($dateOfBirth, $result['dateOfBirth']);
+        TestClass::insertSeedDataIfExists();
     }
 
     /**
-     * @expectedException Exception
+     * testInsertSeedDataIfExists Test that insertSeedDataIfExists executes as expected.
      */
-    public function testGetSingleWrongMappingProducesException()
+    public function testInsertSeedDataIfExistsDoesNothingIfmethodDoesNotExist()
     {
+        TestClassNoSeedSetup::$api = $this->createMock(APIInterface::class);
+
         // Prepare / Mock
-        $where = ['random' => 20];
+        TestClassNoSeedSetup::$api->expects($this->never())
+            ->method('insert');
 
         // Execute
-        TestClass::getSingle($where);
+        TestClassNoSeedSetup::insertSeedDataIfExists();
     }
 
     /**
@@ -169,6 +198,58 @@ class BaseProviderTest extends PHPUnit_Framework_TestCase
 
         // Assert Result
         self::assertEquals($lastId, $result);
+    }
+
+    /**
+     * testGetSingle Test that getSingle executes as expected.
+     */
+    public function testGetSingle()
+    {
+        // Prepare / Mock
+        $where = ['name' => 20];
+        $userId = 5;
+        $forename = 'Abdul Wahab';
+        $dateOfBirth = '10-05-1989';
+
+        $keyStoreMock = $this->createMock(KeyStoreInterface::class);
+        $keyStoreMock->expects($this->at(0))
+            ->method('getKeyword')
+            ->with('test.table.id')
+            ->willReturn($userId);
+        $keyStoreMock->expects($this->at(1))
+            ->method('getKeyword')
+            ->with('test.table.forename')
+            ->willReturn($forename);
+        $keyStoreMock->expects($this->at(2))
+            ->method('getKeyword')
+            ->with('test.table.dob')
+            ->willReturn($dateOfBirth);
+
+        TestClass::$api->expects($this->exactly(3))
+            ->method('get')
+            ->with('keyStore')
+            ->willReturn($keyStoreMock);
+
+        // Execute
+        $result = TestClass::getSingle($where);
+
+        // Assert Result
+        self::assertCount(3, $result);
+        self::assertEquals($userId, $result['id']);
+        self::assertEquals($forename, $result['name']);
+        self::assertEquals($dateOfBirth, $result['dateOfBirth']);
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testGetSingleWrongMappingProducesException()
+    {
+        // Prepare / Mock
+        $where = ['random' => 20];
+
+        // Execute
+        TestClass::getSingle($where);
     }
 
     /**
@@ -417,31 +498,106 @@ class BaseProviderTest extends PHPUnit_Framework_TestCase
      */
     public function testRestoreSession()
     {
-        $this->markTestIncomplete('This test has not been implemented yet.');
         // Prepare / Mock
-        //nmock
+        $this->setPrivatePropertyValue('savedSession', [
+            TestClass::class => [
+                'key' => 'name',
+                'value' => 'Abdul'
+            ]
+        ]);
+
+        // Value of the name column will be resolved.
+        TestClass::$api->expects($this->once())
+            ->method('select')
+            ->with('test.table', [
+                'forename' => 'Abdul'
+            ]);
 
         // Execute
-        $result = $this->testObject->restoreSession();
-
-        // Assert Result
-        self::assert();
+        TestClass::restoreSession();
     }
 
     /**
-     * testInsertSeedDataIfExists Test that insertSeedDataIfExists executes as expected.
+     * test that the resolveDataFieldMappings method works as expected.
      */
-    public function testInsertSeedDataIfExists()
+    public function testResolveDataFieldMappings()
     {
-        $this->markTestIncomplete('This test has not been implemented yet.');
-        // Prepare / Mock
-        //nmock
+        // Mock
+        $data = [
+            'id' => 10,
+            'name' => 'Abdul',
+            'dateOfBirth' => '10-05-1989'
+        ];
 
-        // Execute
-        $result = $this->testObject->insertSeedDataIfExists();
+        // Run
+        $resolvedMapping = $this->invokeMethod('resolveDataFieldMappings', [$data]);
 
-        // Assert Result
-        self::assert();
+        // Assert
+        self::assertEquals([
+            'id' => 10,
+            'forename' => 'Abdul',
+            'dob' => '10-05-1989'
+        ], $resolvedMapping);
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testResolveDataFieldMappingsInvalidMapping()
+    {
+        // Mock
+        $data = [
+            'id' => 10,
+            'name' => 'Abdul',
+            'dateOfBirth' => '10-05-1989',
+            'unknown' => 70
+        ];
+
+        // Run
+        $this->invokeMethod('resolveDataFieldMappings', [$data]);
+    }
+
+    /**
+     * tes that the getFieldMapping method works as expected.
+     */
+    public function testGetFieldMapping()
+    {
+        $key = 'name';
+
+        $mapping = $this->invokeMethod('getFieldMapping', [$key]);
+
+        self::assertEquals('forename', $mapping);
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testGetFieldMappingUnknownColumn()
+    {
+        $key = 'unknown';
+
+        $this->invokeMethod('getFieldMapping', [$key]);
+    }
+
+    /**
+     * Test that the ensureBaseTable method works as expected.
+     */
+    public function testEnsureBaseTable()
+    {
+        // This will pass because the table has a value set.
+        $this->invokeMethod('ensureBaseTable');
+    }
+
+    /**
+     * Test that the ensureBaseTable method works as expected.
+     *
+     * @expectedException Exception
+     */
+    public function testEnsureBaseTableNotSet()
+    {
+        TestClass::$table = null;
+
+        $this->invokeMethod('ensureBaseTable');
     }
 
     /**
@@ -450,7 +606,7 @@ class BaseProviderTest extends PHPUnit_Framework_TestCase
      *
      * @return string
      */
-    private function invokeMethod($method, array $args)
+    private function invokeMethod($method, array $args = [])
     {
         $reflectionMethod = $this->reflection->getMethod($method);
         $reflectionMethod->setAccessible(true);
@@ -469,5 +625,13 @@ class BaseProviderTest extends PHPUnit_Framework_TestCase
         $reflectionProperty->setAccessible(true);
 
         return $reflectionProperty->getValue();
+    }
+
+    private function setPrivatePropertyValue($property, $value)
+    {
+        $reflectionProperty = new ReflectionProperty(BaseProvider::class, 'savedSession');
+        $reflectionProperty->setAccessible(true);
+
+        $reflectionProperty->setValue(TestClass::class, $value);
     }
 }
