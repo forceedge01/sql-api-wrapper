@@ -1,11 +1,13 @@
 <?php
 
-namespace Cruise\Testing\Behaviour\ContextHelper;
+namespace Genesis\SQLExtensionWrapper;
 
+use DateTime;
 use Exception;
+use Traversable;
 
 /**
- * DataRetriever class. Holds convenience methods.
+ * DataRetriever class. Holds convenience methods for interacting with data coming from feature files.
  */
 class DataRetriever
 {
@@ -23,7 +25,7 @@ class DataRetriever
             throw new Exception("Expect to find key '$key' in data: " . print_r($data, true));
         }
 
-        return $data[$key];
+        return self::getFormattedValue($data[$key], $key);
     }
 
     /**
@@ -42,6 +44,43 @@ class DataRetriever
             return $default;
         }
 
-        return $data[$key];
+        return self::getFormattedValue($data[$key], $key);
+    }
+
+    /**
+     * @param iterable $iterable
+     * @param callable $func
+     *
+     * @return string
+     */
+    public static function loopDataSet(Traversable $iterable, callable $func)
+    {
+        foreach ($iterable as $key => $value) {
+            $func($key, $value);
+        }
+    }
+
+    /**
+     * Rules:
+     * - A field ending with Date will be returned as DateTime
+     * - A field ending with Amount will be returned in pence
+     * - The value otherwise as is.
+     *
+     * @param string $value
+     * @param string $field
+     *
+     * @return string|DateTimeInterface
+     */
+    private static function getFormattedValue($value, $field)
+    {
+        if (strpos($field, 'Date') !== false) {
+            return new DateTime($value);
+        }
+
+        if (strpos($field, 'Amount') !== false) {
+            return $value * 100;
+        }
+
+        return $value;
     }
 }

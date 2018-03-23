@@ -3,6 +3,7 @@
 namespace Genesis\SQLExtensionWrapper;
 
 use Exception;
+use Genesis\SQLExtension\Context\API;
 
 /**
 * This class serves as a Decorator for the Genesis API class.
@@ -14,6 +15,28 @@ abstract class BaseProvider implements APIDecoratorInterface
      * @var array The saved session storage.
      */
     private static $savedSession;
+
+    /**
+     * @return API
+     */
+    abstract public static function getApi();
+
+    /**
+     * Returns the base table to operate on.
+     *
+     * @return string
+     */
+    abstract public static function getBaseTable();
+
+    /**
+     * The data mapping to use when reading/writing data to the table.
+     *
+     * @return array [
+     *     '<mappingName>' => '<mappedToName>',
+     *     ...
+     * ]
+     */
+    abstract public static function getDataMapping();
 
     /**
      * Inserts seed data if method 'setupSeedData' exists on calling class.
@@ -32,16 +55,20 @@ abstract class BaseProvider implements APIDecoratorInterface
      * Depends on getBaseTable.
      *
      * @param array $data The data set to create the fixture from, note if no data is provided, it will be auto-filled.
-     * @param string|null $uniqueColumn The column that uniquely represents the data set and any
+     * @param array $uniqueColumn The columns that uniquely represents the data set and any
      * old data set would match.
      *
      * @return int The last insert Id of the fixture data.
      */
-    public static function createFixture(array $data = [], $uniqueColumn = null)
+    public static function createFixture(array $data = [], $uniqueColumn = [])
     {
         self::ensureBaseTable();
 
         if ($uniqueColumn) {
+            if (! isset($data[$uniqueColumn])) {
+                throw new Exception('Unique column provided in createFixture does not exist on data.');
+            }
+
             static::getAPI()->delete(static::getBaseTable(), self::resolveDataFieldMappings(
                 [$uniqueColumn => $data[$uniqueColumn]]
             ));
@@ -51,6 +78,8 @@ abstract class BaseProvider implements APIDecoratorInterface
     }
 
     /**
+     * Get a row from the database.
+     *
      * @param array $where
      *
      * @return array
@@ -58,7 +87,7 @@ abstract class BaseProvider implements APIDecoratorInterface
     public static function getSingle(array $where)
     {
         self::ensureBaseTable();
-        self::select($where, static::getBaseTable());
+        self::select($where);
 
         $data = [];
         foreach (static::getDataMapping() as $name => $dbColumnName) {
@@ -69,6 +98,8 @@ abstract class BaseProvider implements APIDecoratorInterface
     }
 
     /**
+     * Get value of a column from the database.
+     *
      * @param string $column
      * @param array $where
      *
@@ -78,7 +109,7 @@ abstract class BaseProvider implements APIDecoratorInterface
     {
         self::ensureBaseTable();
         $table = static::getBaseTable();
-        self::select($where, $table);
+        self::select($where);
 
         return self::getValue($column);
     }
@@ -111,7 +142,7 @@ abstract class BaseProvider implements APIDecoratorInterface
      *
      * @return void
      */
-    protected static function select(array $where)
+    public static function select(array $where)
     {
         self::ensureBaseTable();
         static::getAPI()->select(static::getBaseTable(), self::resolveDataFieldMappings($where));
@@ -122,7 +153,7 @@ abstract class BaseProvider implements APIDecoratorInterface
      *
      * @return int The insert Id.
      */
-    protected static function insert(array $data)
+    public static function insert(array $data)
     {
         self::ensureBaseTable();
         static::getAPI()->insert(static::getBaseTable(), self::resolveDataFieldMappings($data));
@@ -136,7 +167,7 @@ abstract class BaseProvider implements APIDecoratorInterface
      *
      * @return void
      */
-    protected static function update(array $values, array $where)
+    public static function update(array $values, array $where)
     {
         self::ensureBaseTable();
 
@@ -152,10 +183,10 @@ abstract class BaseProvider implements APIDecoratorInterface
      *
      * @return void
      */
-    protected static function delete(array $where)
+    public static function delete(array $where)
     {
         self::ensureBaseTable();
-        static::getAPI()->delete(static::getBaseTable(), static::resolveDataFieldMappings($where));
+        static::getAPI()->delete(static::getBaseTable(), self::resolveDataFieldMappings($where));
     }
 
     /**
@@ -166,7 +197,7 @@ abstract class BaseProvider implements APIDecoratorInterface
      *
      * @return void
      */
-    protected static function truncate($table = null)
+    public static function truncate($table = null)
     {
         $table = self::getTable($table);
         static::getAPI()->delete($table, [
@@ -194,16 +225,9 @@ abstract class BaseProvider implements APIDecoratorInterface
      *
      * @return string The subSelect external ref query.
      */
-    protected static function subSelect($table, $column, array $where)
+    public static function subSelect($table, $column, array $where)
     {
-        $extRefWhereArray = [];
-        foreach ($where as $whereColumn => $value) {
-            $extRefWhereArray[] = sprintf('%s:%s', $whereColumn, $value);
-        }
-
-        $extRefWhere = implode(',', $extRefWhereArray);
-
-        return sprintf('[%s.%s|%s]', $table, $column, $extRefWhere);
+        return static::getAPI()->subSelect($table, $column, $where);
     }
 
     /**
