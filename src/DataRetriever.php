@@ -93,6 +93,34 @@ class DataRetriever
     }
 
     /**
+     * @param TableNode $tableNode
+     *
+     * @return array
+     */
+    public static function transformTableNodeToArray(TableNode $tableNode)
+    {
+        $array = [];
+
+        foreach ($tableNode->getHash() as $row) {
+            $vars = array(
+                $row
+                //,get_class($row), get_class_methods($row)
+            );
+            echo '<pre>';
+            foreach($vars as $key => $var) {
+                var_dump($var);
+                echo PHP_EOL . '===============================' . PHP_EOL . PHP_EOL;
+            }
+            echo 'Debug backtrace ' . PHP_EOL;
+            print_r(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 5));
+            echo 'Output from: ' . __FILE__ . ', Line: ' . __LINE__;
+            exit;
+        }
+
+        return $array;
+    }
+
+    /**
      * @param Traversable $element
      * @param callable $func
      *

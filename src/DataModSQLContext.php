@@ -2,11 +2,13 @@
 
 namespace Genesis\SQLExtensionWrapper;
 
+use Behat\Behat\Context\Context;
+
 /**
  * DecoratedSQLContext class. This class gives you context step definitions out of the box that work with your
  * data modules mapping. To use set the appropriate mapping i.e dataMod => namespacedClass and give it a spin.
  */
-class DecoratedSQLContext
+class DataModSQLContext implements Context
 {
     /**
      * @var array
@@ -14,19 +16,24 @@ class DecoratedSQLContext
     private $dataModMapping;
 
     /**
+     * @Given I have a :entity fixture with the following:
+     *
      * @param string $entity
      * @param TableNode $where
-     *
-     * @return string
      */
     public function givenICreateFixture($entity, TableNode $where)
     {
         $dataMod = $this->resolveEntity($entity);
         $dataMod::createFixture(
-            $where
+            DataRetriever::transformTableNodeToArray($where)
         );
     }
 
+    /**
+     * @param array $mapping
+     *
+     * @return this
+     */
     public function setDataModMapping(array $mapping)
     {
         $this->dataModMapping = $mapping;
@@ -34,12 +41,13 @@ class DecoratedSQLContext
         return $this;
     }
 
+    /**
+     * @param string $entity
+     *
+     * @return string
+     */
     private function resolveEntity($entity)
     {
-        if (isset($this->dataModMapping['*'])) {
-            return $this->dataModMapping['*'];
-        }
-
         if (isset($this->dataModMapping[$entity])) {
             return $this->dataModMapping[$entity];
         }
