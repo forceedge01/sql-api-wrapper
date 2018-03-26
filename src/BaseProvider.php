@@ -156,6 +156,11 @@ abstract class BaseProvider implements APIDecoratorInterface
     public static function insert(array $data)
     {
         self::ensureBaseTable();
+
+        if (method_exists(get_called_class(), 'getDefaults')) {
+            $data = array_merge(static::getDefaults($data), $data);
+        }
+
         static::getAPI()->insert(static::getBaseTable(), self::resolveDataFieldMappings($data));
 
         return static::getAPI()->getLastId();

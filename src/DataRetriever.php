@@ -2,6 +2,7 @@
 
 namespace Genesis\SQLExtensionWrapper;
 
+use Behat\Gherkin\Node\TableNode;
 use DateTime;
 use Exception;
 use Traversable;
@@ -48,16 +49,64 @@ class DataRetriever
     }
 
     /**
-     * @param iterable $iterable
+     * @param TableNode $tableNode
      * @param callable $func
      *
-     * @return string
+     * @return array
      */
-    public static function loopDataSet(Traversable $iterable, callable $func)
+    public static function loopMultiTable(TableNode $tableNode, callable $func)
     {
-        foreach ($iterable as $key => $value) {
-            $func($key, $value);
+        return self::looper($tableNode, $func);
+    }
+
+    /**
+     * @param TableNode $tableNode
+     * @param callable $func
+     *
+     * @return array
+     */
+    public static function loopDataTable(TableNode $tableNode, callable $func)
+    {
+        return self::looper($tableNode, $func);
+    }
+
+    /**
+     * @param TableNode $tableNode
+     * @param callable $func
+     *
+     * @return array
+     */
+    public static function loopSingleTable(TableNode $tableNode, callable $func)
+    {
+        return self::looper($tableNode->getRows(), $func);
+    }
+
+    /**
+     * @param TableNode $tableNode
+     * @param callable $func
+     *
+     * @return array
+     */
+    public static function loopPageFieldsTable(TableNode $tableNode, callable $func)
+    {
+        return self::looper($tableNode->getHash(), $func);
+    }
+
+    /**
+     * @param Traversable $element
+     * @param callable $func
+     *
+     * @return array
+     */
+    private static function looper($element, callable $func)
+    {
+        $result = [];
+
+        foreach ($element as $index => $row) {
+            $result[] = $func($index, $row);
         }
+
+        return $result;
     }
 
     /**
