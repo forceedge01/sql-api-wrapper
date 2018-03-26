@@ -3,6 +3,7 @@
 namespace Genesis\SQLExtensionWrapper;
 
 use Behat\Behat\Context\Context;
+use Behat\Gherkin\Node\TableNode;
 
 /**
  * DecoratedSQLContext class. This class gives you context step definitions out of the box that work with your
@@ -13,7 +14,7 @@ class DataModSQLContext implements Context
     /**
      * @var array
      */
-    private $dataModMapping;
+    private static $dataModMapping;
 
     /**
      * @Given I have a :entity fixture with the following:
@@ -24,21 +25,21 @@ class DataModSQLContext implements Context
     public function givenICreateFixture($entity, TableNode $where)
     {
         $dataMod = $this->resolveEntity($entity);
-        $dataMod::createFixture(
-            DataRetriever::transformTableNodeToArray($where)
-        );
+        $dataSets = DataRetriever::transformTableNodeToArray($where);
+
+        foreach ($dataSets as $dataSet) {
+            $dataMod::createFixture(
+                $dataSet
+            );
+        }
     }
 
     /**
      * @param array $mapping
-     *
-     * @return this
      */
-    public function setDataModMapping(array $mapping)
+    public static function setDataModMapping(array $mapping)
     {
-        $this->dataModMapping = $mapping;
-
-        return $this;
+        self::$dataModMapping = $mapping;
     }
 
     /**
@@ -48,8 +49,8 @@ class DataModSQLContext implements Context
      */
     private function resolveEntity($entity)
     {
-        if (isset($this->dataModMapping[$entity])) {
-            return $this->dataModMapping[$entity];
+        if (isset(self::$dataModMapping[$entity])) {
+            return self::$dataModMapping[$entity];
         }
 
         return $entity;

@@ -101,20 +101,10 @@ class DataRetriever
     {
         $array = [];
 
-        foreach ($tableNode->getHash() as $row) {
-            $vars = array(
-                $row
-                //,get_class($row), get_class_methods($row)
-            );
-            echo '<pre>';
-            foreach($vars as $key => $var) {
-                var_dump($var);
-                echo PHP_EOL . '===============================' . PHP_EOL . PHP_EOL;
+        foreach ($tableNode->getHash() as $index => $row) {
+            foreach ($row as $field => $value) {
+                $array[$index][$field] = self::getFormattedValue($value, $field);
             }
-            echo 'Debug backtrace ' . PHP_EOL;
-            print_r(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 5));
-            echo 'Output from: ' . __FILE__ . ', Line: ' . __LINE__;
-            exit;
         }
 
         return $array;
@@ -151,7 +141,9 @@ class DataRetriever
     private static function getFormattedValue($value, $field)
     {
         if (strpos($field, 'Date') !== false) {
-            return new DateTime($value);
+            $date = new DateTime($value);
+
+            return $date->format('Y-m-d H:i:s');
         }
 
         if (strpos($field, 'Amount') !== false) {
