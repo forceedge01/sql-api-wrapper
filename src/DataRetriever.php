@@ -52,6 +52,12 @@ class DataRetriever
      * @param TableNode $tableNode
      * @param callable $func
      *
+     * @example Table multiple values for the same target like:
+     * | field1 | field2 | field3 |
+     * | abc    | xyz    | 123    |
+     * | 123    | xyz    | abc    |
+     * | xyz    | xyz    | xyz    |
+     *
      * @return array
      */
     public static function loopMultiTable(TableNode $tableNode, callable $func)
@@ -63,16 +69,11 @@ class DataRetriever
      * @param TableNode $tableNode
      * @param callable $func
      *
-     * @return array
-     */
-    public static function loopDataTable(TableNode $tableNode, callable $func)
-    {
-        return self::looper($tableNode, $func);
-    }
-
-    /**
-     * @param TableNode $tableNode
-     * @param callable $func
+     * @example TableNode:
+     * | Column      | Value      |
+     * | Name        | Abdul      |
+     * | DOB Date    | 10-05-1989 |
+     * | Paid Amount | 500        |
      *
      * @return array
      */
@@ -85,6 +86,12 @@ class DataRetriever
      * @param TableNode $tableNode
      * @param callable $func
      *
+     * @example TableNode:
+     * | Field       | Value      |
+     * | Name        | Abdul      |
+     * | DOB Date    | 10-05-1989 |
+     * | Paid Amount | 500        |
+     *
      * @return array
      */
     public static function loopPageFieldsTable(TableNode $tableNode, callable $func)
@@ -93,21 +100,29 @@ class DataRetriever
     }
 
     /**
-     * @param TableNode $tableNode
+     * Rules:
+     * - A field ending with Date will be returned as DateTime
+     * - A field ending with Amount will be returned in pence
+     * - The value otherwise as is.
      *
-     * @return array
+     * @param string $value
+     * @param string $field
+     *
+     * @return string|int
      */
-    public static function transformTableNodeToArray(TableNode $tableNode)
+    public static function getFormattedValue($value, $field)
     {
-        $array = [];
+        if (strpos($field, 'Date') !== false) {
+            $date = new DateTime($value);
 
-        foreach ($tableNode->getHash() as $index => $row) {
-            foreach ($row as $field => $value) {
-                $array[$index][$field] = self::getFormattedValue($value, $field);
-            }
+            return $date->format('Y-m-d H:i:s');
         }
 
-        return $array;
+        if (strpos($field, 'Amount') !== false) {
+            return $value * 100;
+        }
+
+        return $value;
     }
 
     /**
@@ -125,31 +140,5 @@ class DataRetriever
         }
 
         return $result;
-    }
-
-    /**
-     * Rules:
-     * - A field ending with Date will be returned as DateTime
-     * - A field ending with Amount will be returned in pence
-     * - The value otherwise as is.
-     *
-     * @param string $value
-     * @param string $field
-     *
-     * @return string|DateTimeInterface
-     */
-    private static function getFormattedValue($value, $field)
-    {
-        if (strpos($field, 'Date') !== false) {
-            $date = new DateTime($value);
-
-            return $date->format('Y-m-d H:i:s');
-        }
-
-        if (strpos($field, 'Amount') !== false) {
-            return $value * 100;
-        }
-
-        return $value;
     }
 }

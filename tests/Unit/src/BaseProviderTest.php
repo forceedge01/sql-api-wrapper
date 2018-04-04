@@ -456,8 +456,12 @@ class BaseProviderTest extends PHPUnit_Framework_TestCase
         $column = 'email';
         $where = ['name' => 'Abdul', 'dob' => '10-05-1989'];
 
-        // Execute
-        $result = $this->invokeMethod('subSelect', [$table, $column, $where]);
+        TestClass::$api->expects($this->once())
+            ->method('subSelect')
+            ->with($table, $column, $where)
+            ->willReturn('[User.email|name:Abdul,dob:10-05-1989]');
+
+        $result = TestClass::subSelect($table, $column, $where);
 
         // Assert Result
         self::assertEquals('[User.email|name:Abdul,dob:10-05-1989]', $result);
