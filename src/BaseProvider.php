@@ -3,6 +3,7 @@
 namespace Genesis\SQLExtensionWrapper;
 
 use Exception;
+use Genesis\SQLExtension\Context\API;
 
 /**
 * This class serves as a Decorator for the Genesis API class.
@@ -14,6 +15,67 @@ abstract class BaseProvider implements APIDecoratorInterface
      * @var array The saved session storage.
      */
     private static $savedSession;
+
+    /**
+     * @var array Bridge to other types models.
+     */
+    private static $bridge;
+
+    /**
+     * @return API
+     */
+    abstract public static function getApi();
+
+    /**
+     * Returns the base table to operate on.
+     *
+     * @return string
+     */
+    public static function getBaseTable()
+    {
+        if (static::class instanceof self::$bridge['bridgeInterface']) {
+            $bridge = self::$bridge['bridge'];
+
+            return $bridge::getBaseTable(static::class);
+        }
+
+        return static::getBaseTable();
+    }
+
+    /**
+     * The data mapping to use when reading/writing data to the table.
+     *
+     * @return array [
+     *     '<mappingName>' => '<mappedToName>',
+     *     ...
+     * ]
+     */
+    public static function getDataMapping()
+    {
+        if (static::class instanceof self::$bridge['bridgeInterface']) {
+            $bridge = self::$bridge['bridge'];
+
+            return $bridge::getDataMapping(static::class);
+        }
+
+        return static::getDataMapping();
+    }
+
+    /**
+     * Their can only be one bridge registered at any given time.
+     *
+     * @param string $bridgeInterface
+     * @param string $bridgeHandler
+     *
+     * @return void
+     */
+    public static function registerBridge($bridgeInterface, $bridgeHandler)
+    {
+        self::$bridge = [
+            'bridgeInterface' => $bridgeInterface,
+            'bridge' => $bridgeHandler
+        ];
+    }
 
     /**
      * Inserts seed data if method 'setupSeedData' exists on calling class.
@@ -29,10 +91,11 @@ abstract class BaseProvider implements APIDecoratorInterface
 
     /**
      * Create fresh fixture data set everytime this method is run, deleting the old value and recreating it.
-     * Depends on getBaseTable.
+     * Depends on getBaseTable. The data provided is validated against the mapping you have set in your data mod
+     * so you don't pass in values that are not intended to be passed in.
      *
      * @param array $data The data set to create the fixture from, note if no data is provided, it will be auto-filled.
-     * @param string|null $uniqueColumn The column that uniquely represents the data set and any
+     * @param string $uniqueColumn The column that uniquely represents the data set and any
      * old data set would match.
      *
      * @return int The last insert Id of the fixture data.
@@ -42,6 +105,10 @@ abstract class BaseProvider implements APIDecoratorInterface
         self::ensureBaseTable();
 
         if ($uniqueColumn) {
+            if (! isset($data[$uniqueColumn])) {
+                throw new Exception('Unique column provided in createFixture does not exist on data.');
+            }
+
             static::getAPI()->delete(static::getBaseTable(), self::resolveDataFieldMappings(
                 [$uniqueColumn => $data[$uniqueColumn]]
             ));
@@ -51,6 +118,8 @@ abstract class BaseProvider implements APIDecoratorInterface
     }
 
     /**
+     * Get a row from the database.
+     *
      * @param array $where
      *
      * @return array
@@ -58,7 +127,7 @@ abstract class BaseProvider implements APIDecoratorInterface
     public static function getSingle(array $where)
     {
         self::ensureBaseTable();
-        self::select($where, static::getBaseTable());
+        self::select($where);
 
         $data = [];
         foreach (static::getDataMapping() as $name => $dbColumnName) {
@@ -69,6 +138,8 @@ abstract class BaseProvider implements APIDecoratorInterface
     }
 
     /**
+     * Get value of a column from the database.
+     *
      * @param string $column
      * @param array $where
      *
@@ -78,7 +149,7 @@ abstract class BaseProvider implements APIDecoratorInterface
     {
         self::ensureBaseTable();
         $table = static::getBaseTable();
-        self::select($where, $table);
+        self::select($where);
 
         return self::getValue($column);
     }
@@ -105,76 +176,6 @@ abstract class BaseProvider implements APIDecoratorInterface
     }
 
     /**
-     * Couple with getValue() to get the resulting values out.
-     *
-     * @param array $where The selection criteria.
-     *
-     * @return void
-     */
-    protected static function select(array $where)
-    {
-        self::ensureBaseTable();
-        static::getAPI()->select(static::getBaseTable(), self::resolveDataFieldMappings($where));
-    }
-
-    /**
-     * @param array $data The data set to insert.
-     *
-     * @return int The insert Id.
-     */
-    protected static function insert(array $data)
-    {
-        self::ensureBaseTable();
-        static::getAPI()->insert(static::getBaseTable(), self::resolveDataFieldMappings($data));
-
-        return static::getAPI()->getLastId();
-    }
-
-    /**
-     * @param array $values The values data set to update with.
-     * @param array $where The selection criteria.
-     *
-     * @return void
-     */
-    protected static function update(array $values, array $where)
-    {
-        self::ensureBaseTable();
-
-        static::getAPI()->update(
-            static::getBaseTable(),
-            self::resolveDataFieldMappings($values),
-            self::resolveDataFieldMappings($where)
-        );
-    }
-
-    /**
-     * @param array $where The selection criteria.
-     *
-     * @return void
-     */
-    protected static function delete(array $where)
-    {
-        self::ensureBaseTable();
-        static::getAPI()->delete(static::getBaseTable(), static::resolveDataFieldMappings($where));
-    }
-
-    /**
-     * Truncates a table based on the value provided by getBaseTable and assumes that the table has the column id.
-     * Depends on getBaseTable.
-     *
-     * @param null|mixed $table
-     *
-     * @return void
-     */
-    protected static function truncate($table = null)
-    {
-        $table = self::getTable($table);
-        static::getAPI()->delete($table, [
-            'id' => '!NULL'
-        ]);
-    }
-
-    /**
      * TODO: take the reference of a dataMod as the table, and resolve datamapping from it.
      *
      * Construct an external reference clause for the query.
@@ -194,16 +195,9 @@ abstract class BaseProvider implements APIDecoratorInterface
      *
      * @return string The subSelect external ref query.
      */
-    protected static function subSelect($table, $column, array $where)
+    public static function subSelect($table, $column, array $where)
     {
-        $extRefWhereArray = [];
-        foreach ($where as $whereColumn => $value) {
-            $extRefWhereArray[] = sprintf('%s:%s', $whereColumn, $value);
-        }
-
-        $extRefWhere = implode(',', $extRefWhereArray);
-
-        return sprintf('[%s.%s|%s]', $table, $column, $extRefWhere);
+        return static::getAPI()->subSelect($table, $column, $where);
     }
 
     /**
@@ -231,6 +225,92 @@ abstract class BaseProvider implements APIDecoratorInterface
         static::getAPI()->select(static::getBaseTable(), [
             self::getFieldMapping(self::$savedSession[$callingClass]['key']) =>
             self::$savedSession[$callingClass]['value']
+        ]);
+    }
+
+    /**
+     * Couple with getValue() to get the resulting values out. This method is protected and should be implemented
+     * by one your data modules, this is so you can provide more context around the action your taking.
+     *
+     * To get a value for a column or access an entire row, please look at other public methods available.
+     *
+     * @param array $where The selection criteria.
+     *
+     * @return void
+     */
+    protected static function select(array $where)
+    {
+        self::ensureBaseTable();
+        static::getAPI()->select(static::getBaseTable(), self::resolveDataFieldMappings($where));
+    }
+
+    /**
+     * @param array $data The data set to insert. This method is protected and should be implemented
+     * by one your data modules, this is so you can provide more context around the action your taking.
+     *
+     * @return int The insert Id.
+     */
+    protected static function insert(array $data)
+    {
+        self::ensureBaseTable();
+
+        if (method_exists(get_called_class(), 'getDefaults')) {
+            $data = array_merge(static::getDefaults($data), $data);
+        }
+
+        static::getAPI()->insert(static::getBaseTable(), self::resolveDataFieldMappings($data));
+
+        return static::getAPI()->getLastId();
+    }
+
+    /**
+     * This method is protected and should be implemented
+     * by one your data modules, this is so you can provide more context around the action your taking.
+     *
+     * @param array $values The values data set to update with.
+     * @param array $where The selection criteria.
+     *
+     * @return void
+     */
+    protected static function update(array $values, array $where)
+    {
+        self::ensureBaseTable();
+
+        static::getAPI()->update(
+            static::getBaseTable(),
+            self::resolveDataFieldMappings($values),
+            self::resolveDataFieldMappings($where)
+        );
+    }
+
+    /**
+     * This method is protected and should be implemented
+     * by one your data modules, this is so you can provide more context around the action your taking.\
+     *
+     * @param array $where The selection criteria.
+     *
+     * @return void
+     */
+    protected static function delete(array $where)
+    {
+        self::ensureBaseTable();
+        static::getAPI()->delete(static::getBaseTable(), self::resolveDataFieldMappings($where));
+    }
+
+    /**
+     * Truncates a table based on the value provided by getBaseTable and assumes that the table has the column id.
+     * Depends on getBaseTable. This method is protected and should be implemented
+     * by one your data modules, this is so you can provide more context around the action your taking.
+     *
+     * @param null|mixed $table
+     *
+     * @return void
+     */
+    protected static function truncate($table = null)
+    {
+        $table = self::getTable($table);
+        static::getAPI()->delete($table, [
+            'id' => '!NULL'
         ]);
     }
 

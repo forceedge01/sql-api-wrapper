@@ -1,11 +1,14 @@
 <?php
 
-namespace Cruise\Testing\Behaviour\ContextHelper;
+namespace Genesis\SQLExtensionWrapper;
 
+use Behat\Gherkin\Node\TableNode;
+use DateTime;
 use Exception;
+use Traversable;
 
 /**
- * DataRetriever class. Holds convenience methods.
+ * DataRetriever class. Holds convenience methods for interacting with data coming from feature files.
  */
 class DataRetriever
 {
@@ -23,7 +26,7 @@ class DataRetriever
             throw new Exception("Expect to find key '$key' in data: " . print_r($data, true));
         }
 
-        return $data[$key];
+        return self::getFormattedValue($data[$key], $key);
     }
 
     /**
@@ -42,6 +45,100 @@ class DataRetriever
             return $default;
         }
 
-        return $data[$key];
+        return self::getFormattedValue($data[$key], $key);
+    }
+
+    /**
+     * @param TableNode $tableNode
+     * @param callable $func
+     *
+     * @example Table multiple values for the same target like:
+     * | field1 | field2 | field3 |
+     * | abc    | xyz    | 123    |
+     * | 123    | xyz    | abc    |
+     * | xyz    | xyz    | xyz    |
+     *
+     * @return array
+     */
+    public static function loopMultiTable(TableNode $tableNode, callable $func)
+    {
+        return self::looper($tableNode, $func);
+    }
+
+    /**
+     * @param TableNode $tableNode
+     * @param callable $func
+     *
+     * @example TableNode:
+     * | Column      | Value      |
+     * | Name        | Abdul      |
+     * | DOB Date    | 10-05-1989 |
+     * | Paid Amount | 500        |
+     *
+     * @return array
+     */
+    public static function loopSingleTable(TableNode $tableNode, callable $func)
+    {
+        return self::looper($tableNode->getRows(), $func);
+    }
+
+    /**
+     * @param TableNode $tableNode
+     * @param callable $func
+     *
+     * @example TableNode:
+     * | Field       | Value      |
+     * | Name        | Abdul      |
+     * | DOB Date    | 10-05-1989 |
+     * | Paid Amount | 500        |
+     *
+     * @return array
+     */
+    public static function loopPageFieldsTable(TableNode $tableNode, callable $func)
+    {
+        return self::looper($tableNode->getHash(), $func);
+    }
+
+    /**
+     * Rules:
+     * - A field ending with Date will be returned as DateTime
+     * - A field ending with Amount will be returned in pence
+     * - The value otherwise as is.
+     *
+     * @param string $value
+     * @param string $field
+     *
+     * @return string|int
+     */
+    public static function getFormattedValue($value, $field)
+    {
+        if (strpos($field, 'Date') !== false) {
+            $date = new DateTime($value);
+
+            return $date->format('Y-m-d H:i:s');
+        }
+
+        if (strpos($field, 'Amount') !== false) {
+            return $value * 100;
+        }
+
+        return $value;
+    }
+
+    /**
+     * @param Traversable $element
+     * @param callable $func
+     *
+     * @return array
+     */
+    private static function looper($element, callable $func)
+    {
+        $result = [];
+
+        foreach ($element as $index => $row) {
+            $result[] = $func($index, $row);
+        }
+
+        return $result;
     }
 }

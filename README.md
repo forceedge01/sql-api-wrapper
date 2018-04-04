@@ -53,7 +53,7 @@ abstract class BaseDataMod extends BaseProvider
     {
         if (! self::$sqlApi) {
             self::$sqlApi = new Context\API(
-                new Context\DBManager(self::$connectionDetails),
+                new Context\DBManager(Context\DatabaseProviders\Factory(), self::$connectionDetails),
                 new Context\SQLBuilder(),
                 new Context\LocalKeyStore(),
                 new Context\SQLHistory()
@@ -84,7 +84,8 @@ class UserDataMod extends BaseDataMod
     }
 
     /**
-     * Returns the data mapping for the base table.
+     * Returns the data mapping for the base table. This is the data that is allowed to be passed in
+     * to the data mod. <input> => <mapping>
      *
      * @return array
      */
@@ -96,6 +97,22 @@ class UserDataMod extends BaseDataMod
             'dateOfBirth' => 'dob',
             'gender' => 'gender',
             'status' => 'status'
+        ];
+    }
+
+    /**
+     * This method is merged with the data provided, any data provided overwrites the default data. This is a
+     * good opportunity to set foreign key values using the subSelect call.
+     *
+     * @param array $data The data passed in to the data mod.
+     *
+     * @return array
+     */
+    public static function getDefaults(array $data)
+    {
+        return [
+            'dateOfBirth' => '1989-05-10',
+            'gender' => BaseProvider::subSelect('Gender', 'type', ['id' => 1])
         ];
     }
 
