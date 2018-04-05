@@ -1,5 +1,7 @@
 <?php
 
+namespace Genesis\SQLExtensionWrapper\Tests;
+
 use Behat\Gherkin\Node\TableNode;
 use DateTime;
 use Genesis\SQLExtensionWrapper\DataRetriever;
@@ -292,6 +294,57 @@ class DataRetrieverTest extends PHPUnit_Framework_TestCase
             'the result is returned',
             'the result is returned'
         ], $result);
+    }
+
+    /**
+     * testTransformTableNodeToSingleDataSet Test that transformTableNodeToSingleDataSet executes as expected.
+     */
+    public function testTransformTableNodeToSingleDataSet()
+    {
+        /*
+        | Invoice Due Date | +6 months |
+        | Balance Amount   | 500       |
+        | Total Amount     | 600       |
+        | Departure Date   | +8 months |
+         */
+        
+        // Prepare / Mock
+        $dataset = new TableNode([
+            ['Invoice Due Date', '+6 months'],
+            ['Balance Amount', '500'],
+            ['Total Amount', '600'],
+            ['Departure Date', '+8 months']
+        ]);
+    
+        // Execute
+        $result = DataRetriever::transformTableNodeToSingleDataSet($dataset);
+
+        // Assert Result
+        self::assertRegExp('/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/', $result['Invoice Due Date']);
+        self::assertEquals($result['Balance Amount'], 50000);
+        self::assertEquals($result['Total Amount'], 60000);
+        self::assertRegExp('/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/', $result['Departure Date']);
+    }
+
+    /**
+     * testTransformTableNodeToMultiDataSets Test that transformTableNodeToMultiDataSets executes as expected.
+     */
+    public function testTransformTableNodeToMultiDataSets()
+    {
+        // Prepare / Mock
+        $datasets = new TableNode([
+            ['Invoice Due Date', 'Balance Amount', 'Total Amount', 'Departure Date'],
+            ['+6 months', '500', '600', '+8 months']
+        ]);
+    
+        // Execute
+        $result = DataRetriever::transformTableNodeToMultiDataSets($datasets);
+    
+        // Assert Result
+        self::assertEquals(60000, $result[0]['Total Amount']);
+        self::assertEquals(50000, $result[0]['Balance Amount']);
+        self::assertRegExp('/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/', $result[0]['Departure Date']);
+        self::assertRegExp('/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/', $result[0]['Invoice Due Date']);
     }
 
     /**

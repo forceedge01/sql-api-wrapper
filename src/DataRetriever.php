@@ -100,6 +100,44 @@ class DataRetriever
     }
 
     /**
+     * @param TableNode $where
+     * | Column   | Value      |
+     * | Name     | Abdul      |
+     * | DOB Date | 10-05-1989 |
+     *
+     * @return array
+     */
+    public static function transformTableNodeToSingleDataSet(TableNode $where)
+    {
+        $array = [];
+        foreach ($where->getRows() as $index => $row) {
+            $array[$row[0]] = self::getFormattedValue($row[1], $row[0]);
+        }
+
+        return $array;
+    }
+
+    /**
+     * @param TableNode $where
+     * | Name    | DOB Date   |
+     * | Abdul   | 10-05-1989 |
+     * | Sabhat  | 01-04-1985 |
+     *
+     * @return array
+     */
+    public static function transformTableNodeToMultiDataSets(TableNode $where)
+    {
+        $array = [];
+        foreach ($where as $index => $row) {
+            foreach ($row as $column => $value) {
+                $array[$index][$column] = self::getFormattedValue($value, $column);
+            }
+        }
+
+        return $array;
+    }
+
+    /**
      * Rules:
      * - A field ending with Date will be returned as DateTime
      * - A field ending with Amount will be returned in pence

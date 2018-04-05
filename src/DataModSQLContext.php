@@ -17,7 +17,7 @@ class DataModSQLContext implements Context
     private static $dataModMapping;
 
     /**
-     * @Given I have a :entity fixture with the following:
+     * @Given I have a :entity fixture with the following data set:
      *
      * @param string $entity
      * @param TableNode $where
@@ -25,7 +25,23 @@ class DataModSQLContext implements Context
     public function givenICreateFixture($entity, TableNode $where)
     {
         $dataMod = $this->resolveEntity($entity);
-        $dataSets = DataRetriever::transformTableNodeToArray($where);
+        $dataSet = DataRetriever::transformTableNodeToSingleDataSet($where);
+
+        $dataMod::createFixture(
+            $dataSet
+        );
+    }
+
+    /**
+     * @Given I have multiple :entity fixtures with the following data sets:
+     *
+     * @param string $entity
+     * @param TableNode $where
+     */
+    public function givenICreateFixture($entity, TableNode $where)
+    {
+        $dataMod = $this->resolveEntity($entity);
+        $dataSets = DataRetriever::transformTableNodeToMultiDataSets($where);
 
         foreach ($dataSets as $dataSet) {
             $dataMod::createFixture(
