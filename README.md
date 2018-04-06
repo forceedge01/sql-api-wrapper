@@ -53,7 +53,7 @@ class FeatureContext
 
 You can also set a bridge between your framework data modules and the wrapper. Your bridge must implement the Genesis\SQLExtensionWrapper\BridgeInterface to work. You can register your bridge like so:
 
-```
+```php
 class FeatureContext
 {
     public function __construct()
@@ -81,6 +81,7 @@ The wrapper provides with powerful tools around the [behat-sql-extension](https:
 - getRequiredData(array $data, string $key) // Extended: Extracts value from an array.
 - getOptionalData(array $data, string $key, mixed $default = null) // Extended: Optional value from an array, provide default otherwise.
 - getFieldMapping(string $key) // Extended: Get field mapping provided in the getDataMapping method.
+- getKeyword(string $key) // Get the keyword for mapped key.
 
 Note: All methods provided by the wrapper are static, because they have a global state - we don't need to instantiate this wrapper.
 
@@ -302,8 +303,7 @@ Build dynamic URLs
 You can use the getKeyword call provided by the BaseProvider class to get a reference for a key defined on a dataMod. For example
 
 ```php
-
-// We want to create a user and have its id placed in the url such as '/user/<id>/'
+// We want to create a user and have its id placed in the URL such as '/user/<id>/', so we can visit the page.
 
 // Normally with the behat-sql-extension you need to do the following:
 $routes = [
