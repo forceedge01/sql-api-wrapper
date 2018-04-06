@@ -17,12 +17,20 @@ class DataModSQLContext implements Context
     private static $dataModMapping;
 
     /**
+     * @param array $dataModMapping
+     */
+    public function __construct(array $dataModMapping = array())
+    {
+        self::setDataModMappingFromBehatYamlFile($normalisedMapping);
+    }
+
+    /**
      * @Given I have a :entity fixture with the following data set:
      *
      * @param string $entity
      * @param TableNode $where
      */
-    public function givenICreateFixture($entity, TableNode $where)
+    public function givenIACreateFixture($entity, TableNode $where)
     {
         $dataMod = $this->resolveEntity($entity);
         $dataSet = DataRetriever::transformTableNodeToSingleDataSet($where);
@@ -38,7 +46,7 @@ class DataModSQLContext implements Context
      * @param string $entity
      * @param TableNode $where
      */
-    public function givenICreateFixture($entity, TableNode $where)
+    public function givenIMultipleCreateFixtures($entity, TableNode $where)
     {
         $dataMod = $this->resolveEntity($entity);
         $dataSets = DataRetriever::transformTableNodeToMultiDataSets($where);
@@ -48,6 +56,24 @@ class DataModSQLContext implements Context
                 $dataSet
             );
         }
+    }
+
+    /**
+     * @param array $dataModMapping
+     */
+    private static function setDataModMappingFromBehatYamlFile(array $dataModMapping = array())
+    {
+        if (! $dataModMapping) {
+            return false;
+        }
+
+        $normalisedMapping = [];
+        foreach ($dataModMapping as $mapping) {
+            $key = key($mapping);
+            $normalisedMapping[$key] = $mapping[$key];
+        }
+
+        self::setDataModMapping($normalisedMapping);
     }
 
     /**
@@ -65,10 +91,17 @@ class DataModSQLContext implements Context
      */
     private function resolveEntity($entity)
     {
+        // If we've got a global namespace where all the datamods reside, just use that.
+        if (isset(self::$dataModMapping['*'])) {
+            return self::$dataModMapping['*'] . $entity;
+        }
+
+        // If we found a custom datamod mapping use that.
         if (isset(self::$dataModMapping[$entity])) {
             return self::$dataModMapping[$entity];
         }
 
+        // Try to load the mapping anyway.
         return $entity;
     }
 }

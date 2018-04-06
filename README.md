@@ -1,6 +1,73 @@
 # SQL API Wrapper [ ![Codeship Status for forceedge01/sql-api-wrapper](https://app.codeship.com/projects/96302210-ad45-0135-72c6-56f00403434d/status?branch=master)](https://app.codeship.com/projects/257181)
 
-This wrapper provides with powerful tools around the [behat-sql-extension](https://github.com/forceedge01/behat-sql-extension) API class. Methods provided:
+The idea is to declutter the framework by separating logic that relates to data manipulation in the database vs interactions on
+the web interface. This extension provides a framework where you will configure how your database tables will be interacted with and provide a very easy context class that leverages this configuration to manipulate the data for you.
+
+Tools provided by this package:
+- DataModSQLContext - Use your data mods directly with step defintions provided by this class. Just register with the behat.yml
+file and you are good to go.
+- Decorated API BaseProvider Class - for advanced and easy integration with data modules.
+- DataRetriever class - Retrieve data in a robust way and make a solid foundation for your test framework quickly.
+
+DataModSQLContext
+------------------
+```gherkin
+# Insert single entry for a datamod.
+Given I have a :datamod fixture with the following data set:
+| column1 | value1 |
+| column2 | value2 |
+
+# Insert multiple entries for a datamod.
+Given I have multiple :datamod fixtures with the following data sets:
+| column1 | column2 |
+| row1-value1 | row1-value2 |
+| row2-value1 | row2-value2 |
+```
+
+For the above to work, you will have to set the dataMod mapping on the context class. You can do that by:
+
+- Configurating in the behat.yml file:
+```yaml
+default:
+    suites:
+        default:
+            contexts:
+                - Genesis\SQLExtensionWrapper\DataModSQLContext:
+                    dataModMapping:
+                        - "*": \QuickPack\Model\ # Configure path for all data mods using *.
+                        - "User": \QuickPack\Model\User\User # Configure single data mod.
+```
+
+When you have a global path set, this will override all other paths.
+
+- Set the dataMod namespace mapping directly on the context class.
+```php
+class FeatureContext
+{
+    public function __construct()
+    {
+        DataModSQLContext::setDataModMapping(['*' => '\\QuickPack\\Model\\']);
+    }
+}
+```
+
+You can also set a bridge between your framework data modules and the wrapper. Your bridge must implement the Genesis\SQLExtensionWrapper\BridgeInterface to work. You can register your bridge like so:
+
+```
+class FeatureContext
+{
+    public function __construct()
+    {
+        $bridgeObject = new DoctrineBridge();
+        DataModSQLContext::registerBridge($bridgeObject);
+    }
+}
+```
+
+BaseProvide Class
+------------------
+
+The wrapper provides with powerful tools around the [behat-sql-extension](https://github.com/forceedge01/behat-sql-extension) API class. Methods provided:
 
 - insertSeedDataIfExists() // Auto fires on construct.
 - createFixture(array $data = [], string $uniqueColumn = null) // Recreates a record for fresh usage.

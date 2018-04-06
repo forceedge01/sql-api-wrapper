@@ -111,4 +111,14 @@ interface APIDecoratorInterface
      * @return string The subSelect external ref query.
      */
     public static function subSelect($table, $column, array $where);
+
+    /**
+     * Their can only be one bridge registered at any given time.
+     *
+     * @param string $bridgeInterface
+     * @param string $bridgeHandler
+     *
+     * @return void
+     */
+    public static function registerBridge($bridgeHandler);
 }

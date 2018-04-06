@@ -3,6 +3,7 @@
 namespace Genesis\SQLExtensionWrapper;
 
 use Exception;
+use Genesis\SQLExtensionWrapper\BridgeInterface;
 use Genesis\SQLExtension\Context\API;
 
 /**
@@ -24,18 +25,21 @@ abstract class BaseProvider implements APIDecoratorInterface
     /**
      * @return API
      */
-    abstract public static function getApi();
+    public static function getApi()
+    {
+        throw new Exception(
+            'You must implement a version of the getApi call, please follow instructions in the README.'
+        );
+    }
 
     /**
      * Returns the base table to operate on.
      *
      * @return string
      */
-    public static function getBaseTable()
+    public static function getBaseTableForCaller()
     {
-        if (static::class instanceof self::$bridge['bridgeInterface']) {
-            $bridge = self::$bridge['bridge'];
-
+        if ($bridge = self::$bridge) {
             return $bridge::getBaseTable(static::class);
         }
 
@@ -50,11 +54,9 @@ abstract class BaseProvider implements APIDecoratorInterface
      *     ...
      * ]
      */
-    public static function getDataMapping()
+    public static function getDataMappingForCaller()
     {
-        if (static::class instanceof self::$bridge['bridgeInterface']) {
-            $bridge = self::$bridge['bridge'];
-
+        if ($bridge = self::$bridge) {
             return $bridge::getDataMapping(static::class);
         }
 
@@ -62,19 +64,33 @@ abstract class BaseProvider implements APIDecoratorInterface
     }
 
     /**
+     * @param array $data The data being passed in.
+     *
+     * @return array
+     */
+    public static function getDefaultsForCaller(array $data)
+    {
+        if (method_exists(get_called_class(), 'getDefaults')) {
+            return static::getDefaults($data);
+        }
+
+        return [];
+    }
+
+    /**
      * Their can only be one bridge registered at any given time.
      *
-     * @param string $bridgeInterface
-     * @param string $bridgeHandler
+     * @param string $bridge
      *
      * @return void
      */
-    public static function registerBridge($bridgeInterface, $bridgeHandler)
+    public static function registerBridge($bridge)
     {
-        self::$bridge = [
-            'bridgeInterface' => $bridgeInterface,
-            'bridge' => $bridgeHandler
-        ];
+        if (! ($bridge instanceof BridgeInterface)) {
+            throw new Exception('Bridge must implement ' . BridgeInterface::class);
+        }
+
+        self::$bridge = $bridge;
     }
 
     /**
@@ -109,7 +125,7 @@ abstract class BaseProvider implements APIDecoratorInterface
                 throw new Exception('Unique column provided in createFixture does not exist on data.');
             }
 
-            static::getAPI()->delete(static::getBaseTable(), self::resolveDataFieldMappings(
+            static::getAPI()->delete(self::getBaseTableForCaller(), self::resolveDataFieldMappings(
                 [$uniqueColumn => $data[$uniqueColumn]]
             ));
         }
@@ -130,7 +146,7 @@ abstract class BaseProvider implements APIDecoratorInterface
         self::select($where);
 
         $data = [];
-        foreach (static::getDataMapping() as $name => $dbColumnName) {
+        foreach (self::getDataMappingForCaller() as $name => $dbColumnName) {
             $data[$name] = self::getValue($name);
         }
 
@@ -148,7 +164,7 @@ abstract class BaseProvider implements APIDecoratorInterface
     public static function getColumn($column, array $where)
     {
         self::ensureBaseTable();
-        $table = static::getBaseTable();
+        $table = self::getBaseTableForCaller();
         self::select($where);
 
         return self::getValue($column);
@@ -169,7 +185,7 @@ abstract class BaseProvider implements APIDecoratorInterface
 
         return static::getAPI()->get('keyStore')
             ->getKeyword(
-                static::getBaseTable() .
+                self::getBaseTableForCaller() .
                 '.' .
                 $mapping
             );
@@ -222,7 +238,7 @@ abstract class BaseProvider implements APIDecoratorInterface
     {
         $callingClass = get_called_class();
 
-        static::getAPI()->select(static::getBaseTable(), [
+        static::getAPI()->select(self::getBaseTableForCaller(), [
             self::getFieldMapping(self::$savedSession[$callingClass]['key']) =>
             self::$savedSession[$callingClass]['value']
         ]);
@@ -241,7 +257,7 @@ abstract class BaseProvider implements APIDecoratorInterface
     protected static function select(array $where)
     {
         self::ensureBaseTable();
-        static::getAPI()->select(static::getBaseTable(), self::resolveDataFieldMappings($where));
+        static::getAPI()->select(self::getBaseTableForCaller(), self::resolveDataFieldMappings($where));
     }
 
     /**
@@ -254,11 +270,8 @@ abstract class BaseProvider implements APIDecoratorInterface
     {
         self::ensureBaseTable();
 
-        if (method_exists(get_called_class(), 'getDefaults')) {
-            $data = array_merge(static::getDefaults($data), $data);
-        }
-
-        static::getAPI()->insert(static::getBaseTable(), self::resolveDataFieldMappings($data));
+        $data = array_merge(self::getDefaultsForCaller($data), $data);
+        static::getAPI()->insert(self::getBaseTableForCaller(), self::resolveDataFieldMappings($data));
 
         return static::getAPI()->getLastId();
     }
@@ -277,7 +290,7 @@ abstract class BaseProvider implements APIDecoratorInterface
         self::ensureBaseTable();
 
         static::getAPI()->update(
-            static::getBaseTable(),
+            self::getBaseTableForCaller(),
             self::resolveDataFieldMappings($values),
             self::resolveDataFieldMappings($where)
         );
@@ -294,7 +307,7 @@ abstract class BaseProvider implements APIDecoratorInterface
     protected static function delete(array $where)
     {
         self::ensureBaseTable();
-        static::getAPI()->delete(static::getBaseTable(), self::resolveDataFieldMappings($where));
+        static::getAPI()->delete(self::getBaseTableForCaller(), self::resolveDataFieldMappings($where));
     }
 
     /**
@@ -340,7 +353,7 @@ abstract class BaseProvider implements APIDecoratorInterface
      */
     protected static function getFieldMapping($key)
     {
-        $mapping = static::getDataMapping();
+        $mapping = self::getDataMappingForCaller();
         if (! isset($mapping[$key])) {
             throw new Exception(
                 "No data mapping provided for key '$key', mapping provided: " . print_r($mapping, true)
@@ -355,7 +368,7 @@ abstract class BaseProvider implements APIDecoratorInterface
      */
     protected static function ensureBaseTable()
     {
-        if (! static::getBaseTable()) {
+        if (! self::getBaseTableForCaller()) {
             throw new Exception('This call requires the getBaseTable to return the table to operate on.');
         }
     }
@@ -375,7 +388,7 @@ abstract class BaseProvider implements APIDecoratorInterface
 
         foreach ($seedData as $table => $individualSeedData) {
             if (! is_string($table)) {
-                $table = static::getBaseTable();
+                $table = self::getBaseTableForCaller();
             }
 
             if (! is_array($individualSeedData)) {
@@ -397,7 +410,7 @@ abstract class BaseProvider implements APIDecoratorInterface
     private static function getTable($table)
     {
         if (! $table) {
-            return static::getBaseTable();
+            return self::getBaseTableForCaller();
         }
 
         return $table;
