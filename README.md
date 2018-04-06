@@ -19,7 +19,7 @@ Given I have a :datamod fixture with the following data set:
 
 # Insert multiple entries for a datamod.
 Given I have multiple :datamod fixtures with the following data sets:
-| column1 | column2 |
+| column1     | column2     |
 | row1-value1 | row1-value2 |
 | row2-value1 | row2-value2 |
 ```
@@ -345,9 +345,11 @@ To ease the pain of working with TableNodes, here are some calls:
 
 Data conversion built in for most common data types:
 - getFormattedValue($value, $fieldName) // Follows the following rules
+```gherkin
 | Fieldname | Conversion                | More info                                                        |
 | %Date%    | Format to Y-m-d H:i:s     | This is particularly useful with dynamic dates such as yesterday |
 | %Amount%  | To pence, Multiply by 100 | User friendly input such as 100 amount equals 10000 pence        |
+```
 
 ## Development
 
