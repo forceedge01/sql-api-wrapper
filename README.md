@@ -13,15 +13,15 @@ DataModSQLContext
 ------------------
 ```gherkin
 # Insert single entry for a datamod.
-Given I have a :datamod fixture with the following data set:
-| column1 | value1 |
-| column2 | value2 |
+Given I have a "User" fixture with the following data set:
+| name  | Wahab Qureshi              |
+| email | its.inevitable@hotmail.com |
 
 # Insert multiple entries for a datamod.
-Given I have multiple :datamod fixtures with the following data sets:
-| column1     | column2     |
-| row1-value1 | row1-value2 |
-| row2-value1 | row2-value2 |
+Given I have multiple "User" fixtures with the following data sets:
+| name           | email                      |
+| Wahab Qureshi  | its.inevitable@hotmail.com |
+| Sabhat Qureshi | next-gen-coder@hotmail.com |
 ```
 
 For the above to work, you will have to set the dataMod mapping on the context class. You can do that by:
@@ -47,19 +47,6 @@ class FeatureContext
     public function __construct()
     {
         DataModSQLContext::setDataModMapping(['*' => '\\QuickPack\\Model\\']);
-    }
-}
-```
-
-You can also set a bridge between your framework data modules and the wrapper. Your bridge must implement the Genesis\SQLExtensionWrapper\BridgeInterface to work. You can register your bridge like so:
-
-```php
-class FeatureContext
-{
-    public function __construct()
-    {
-        $bridgeObject = new DoctrineBridge();
-        DataModSQLContext::registerBridge($bridgeObject);
     }
 }
 ```
@@ -136,10 +123,10 @@ abstract class BaseDataMod extends BaseProvider
 Then further extend your class to use with your data component classes.
 
 ```php
-# UserDataMod.php
+# User.php
 <?php
 
-class UserDataMod extends BaseDataMod
+class User extends BaseDataMod
 {
     /**
      * Returns the base table to interact with.
@@ -148,7 +135,8 @@ class UserDataMod extends BaseDataMod
      */
     public static function getBaseTable()
     {
-        return 'User';
+        // Ridiculous naming as we find with most databases.
+        return 'MySuperApplication.MyUsersNew';
     }
 
     /**
@@ -161,10 +149,11 @@ class UserDataMod extends BaseDataMod
     {
         return [
             'id' => 'user_id',
-            'name' => 'full_name',
-            'dateOfBirth' => 'dob',
+            'name' => 'f_name',
+            'email' => 'electronic_address',
+            'dateOfBirth' => 'd_o_b',
             'gender' => 'gender',
-            'status' => 'status'
+            'status' => 'real_status'
         ];
     }
 }
@@ -263,6 +252,7 @@ class FeatureContext
 ```
 
 You can further extend your DataMod like so:
+
 ```php
     ...
 
@@ -313,9 +303,9 @@ You can use the getKeyword call provided by the BaseProvider class to get a refe
 ```php
 // We want to create a user and have its id placed in the URL such as '/user/<id>/', so we can visit the page.
 
-// Normally with the behat-sql-extension you need to do the following:
+// Normally with the above data mod configuration and behat-sql-extension you need to do the following:
 $routes = [
-    'user' => '/user/{User.id}/'
+    'user' => '/user/{MySuperApplication.MyUsersNew.user_id}/'
 ];
 
 // Having a data mod gives you a way to abstract any table information 
@@ -325,8 +315,6 @@ $routes = [
 ];
 
 ```
-
-Imagine the above with a table that isn't as friendly as a User and you will find the getKeyword method a very nice alternative. Plus you don't have to update references anywhere.
 
 Data Retriever Class
 --------------------
@@ -349,6 +337,22 @@ Data conversion built in for most common data types:
 | Fieldname | Conversion                | More info                                                        |
 | %Date%    | Format to Y-m-d H:i:s     | This is particularly useful with dynamic dates such as yesterday |
 | %Amount%  | To pence, Multiply by 100 | User friendly input such as 100 amount equals 10000 pence        |
+```
+
+Using a Bridge
+--------------
+
+You can also set a bridge between your framework data modules and the wrapper. Your bridge must implement the Genesis\SQLExtensionWrapper\BridgeInterface to work. You can register your bridge like so:
+
+```php
+class FeatureContext
+{
+    public function __construct()
+    {
+        $bridgeObject = new DoctrineBridge();
+        DataModSQLContext::registerBridge($bridgeObject);
+    }
+}
 ```
 
 ## Development
