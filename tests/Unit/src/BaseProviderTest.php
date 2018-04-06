@@ -605,6 +605,19 @@ class BaseProviderTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * testGetKeyword Test that getKeyword executes as expected.
+     */
+    public function testGetKeyword()
+    {
+        // Execute
+        TestClass::$table = 'test.table';
+        $result = TestClass::getKeyword('name');
+
+        // Assert Result
+        self::assertEquals('{test.table.forename}', $result);
+    }
+
+    /**
      * @param string $method The method to invoke.
      * @param array $args The arguments to pass to the method.
      *

@@ -17,37 +17,74 @@ class DataModSQLContext implements Context
     private static $dataModMapping;
 
     /**
-     * @Given I have a :entity fixture with the following data set:
+     * @param array $dataModMapping
+     * @param boolean $debug
+     */
+    public function __construct(array $dataModMapping = array(), $debug = false)
+    {
+        if ($debug) {
+            define('DEBUG_MODE', 1);
+        }
+
+        self::setDataModMappingFromBehatYamlFile($dataModMapping);
+    }
+
+    /**
+     * @Given I have a :dataModRef fixture with the following data set:
      *
-     * @param string $entity
+     * Note: The first row value in the TableNode is considered the unique key.
+     *
+     * @param string $dataModRef
      * @param TableNode $where
      */
-    public function givenICreateFixture($entity, TableNode $where)
+    public function givenIACreateFixture($dataModRef, TableNode $where)
     {
-        $dataMod = $this->resolveEntity($entity);
+        $dataMod = $this->resolveEntity($dataModRef);
         $dataSet = DataRetriever::transformTableNodeToSingleDataSet($where);
 
         $dataMod::createFixture(
-            $dataSet
+            $dataSet,
+            key($dataSet)
         );
     }
 
     /**
-     * @Given I have multiple :entity fixtures with the following data sets:
+     * @Given I have multiple :dataModRef fixtures with the following data sets:
      *
-     * @param string $entity
+     * Note: The first column value in the TableNode is considered the unique key.
+     *
+     * @param string $dataModRef
      * @param TableNode $where
      */
-    public function givenICreateFixture($entity, TableNode $where)
+    public function givenIMultipleCreateFixtures($dataModRef, TableNode $where)
     {
-        $dataMod = $this->resolveEntity($entity);
+        $dataMod = $this->resolveEntity($dataModRef);
         $dataSets = DataRetriever::transformTableNodeToMultiDataSets($where);
 
         foreach ($dataSets as $dataSet) {
             $dataMod::createFixture(
-                $dataSet
+                $dataSet,
+                key($dataSet)
             );
         }
+    }
+
+    /**
+     * @param array $dataModMapping
+     */
+    private static function setDataModMappingFromBehatYamlFile(array $dataModMapping = array())
+    {
+        if (! $dataModMapping) {
+            return false;
+        }
+
+        $normalisedMapping = [];
+        foreach ($dataModMapping as $mapping) {
+            $key = key($mapping);
+            $normalisedMapping[$key] = $mapping[$key];
+        }
+
+        self::setDataModMapping($normalisedMapping);
     }
 
     /**
@@ -65,10 +102,17 @@ class DataModSQLContext implements Context
      */
     private function resolveEntity($entity)
     {
+        // If we found a custom datamod mapping use that.
         if (isset(self::$dataModMapping[$entity])) {
             return self::$dataModMapping[$entity];
         }
 
+        // If we've got a global namespace where all the datamods reside, just use that.
+        if (isset(self::$dataModMapping['*'])) {
+            return self::$dataModMapping['*'] . $entity;
+        }
+
+        // Try to load the mapping anyway.
         return $entity;
     }
 }
