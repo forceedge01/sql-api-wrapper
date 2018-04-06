@@ -38,7 +38,7 @@ default:
                         - "User": \QuickPack\Model\User\User # Configure single data mod.
 ```
 
-When you have a global path set, this will override all other paths.
+If an exact match for a dataMod is not found, the global path set (*) is used.
 
 - Set the dataMod namespace mapping directly on the context class.
 ```php
@@ -295,6 +295,30 @@ class FeatureContext
     }
 }
 ```
+
+Build dynamic URLs
+-------------------
+
+You can use the getKeyword call provided by the BaseProvider class to get a reference for a key defined on a dataMod. For example
+
+```php
+
+// We want to create a user and have its id placed in the url such as '/user/<id>/'
+
+// Normally with the behat-sql-extension you need to do the following:
+$routes = [
+    'user' => '/user/{User.id}/'
+];
+
+// Having a data mod gives you a way to abstract any table information 
+// by just referencing the data mod itself. The above can be re-written as:
+$routes = [
+    'user' => '/user/' . User::getKeyword('id') . '/'
+];
+
+```
+
+Imagine the above with a table that isn't as friendly as a User and you will find the getKeyword method a very nice alternative. Plus you don't have to update references anywhere.
 
 ## Development
 

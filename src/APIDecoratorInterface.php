@@ -20,14 +20,14 @@ interface APIDecoratorInterface
      *
      * @return string
      */
-    public static function getBaseTable();
+    public static function getBaseTableForCaller();
 
     /**
      * Returns the data mapping for the base table.
      *
      * @return array
      */
-    public static function getDataMapping();
+    public static function getDataMappingForCaller();
 
     /**
      * Inserts seed data if method 'setupSeedData' exists on calling class.
@@ -121,4 +121,14 @@ interface APIDecoratorInterface
      * @return void
      */
     public static function registerBridge($bridgeHandler);
+
+    /**
+     * This method is useful for placing keyword references for data mods
+     * in strings to later replace with their values.
+     *
+     * @param string $key
+     *
+     * @return string
+     */
+    public static function getKeyword($key);
 }

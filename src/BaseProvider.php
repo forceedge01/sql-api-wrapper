@@ -10,7 +10,7 @@ use Genesis\SQLExtension\Context\API;
 * This class serves as a Decorator for the Genesis API class.
 * To use this class effectively, create separate classes for each of your tables and extend off this class.
 */
-abstract class BaseProvider implements APIDecoratorInterface
+abstract class BaseProvider implements APIDecoratorInterface, DataModInterface
 {
     /**
      * @var array The saved session storage.
@@ -242,6 +242,19 @@ abstract class BaseProvider implements APIDecoratorInterface
             self::getFieldMapping(self::$savedSession[$callingClass]['key']) =>
             self::$savedSession[$callingClass]['value']
         ]);
+    }
+
+    /**
+     * This method is useful for placing keyword references for data mods
+     * in strings to later replace with their values.
+     *
+     * @param string $key
+     *
+     * @return string
+     */
+    public static function getKeyword($key)
+    {
+        return '{' . self::getBaseTableForCaller() . '.' . self::getFieldMapping($key) . '}';
     }
 
     /**
