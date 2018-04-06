@@ -167,41 +167,6 @@ class UserDataMod extends BaseDataMod
             'status' => 'status'
         ];
     }
-
-    /**
-     * This method is merged with the data provided, any data provided overwrites the default data. This is a
-     * good opportunity to set foreign key values using the subSelect call.
-     *
-     * @param array $data The data passed in to the data mod.
-     *
-     * @return array
-     */
-    public static function getDefaults(array $data)
-    {
-        return [
-            'dateOfBirth' => '1989-05-10',
-            'gender' => BaseProvider::subSelect('Gender', 'type', ['id' => 1])
-        ];
-    }
-
-    /**
-     * Method uses subSelect to intelligently select the Id of the status and updates the user record.
-     * This is a common case where you want your feature files to be descriptive and won't just pass in id's, use
-     * descriptive names instead and infer values in the lower layers.
-     *
-     * @param string $status The status name (enabled/disabled).
-     * @param int $userId The user to update.
-     *
-     * @return void
-     */
-    public static function updateStatusById($status, $userId)
-    {
-        self::update(self::getBaseTable(), [
-            'status' => self::subSelect('Status', 'id', ['name' => $status])
-        ], [
-            'id' => $userId
-        ])
-    }
 }
 
 ```
@@ -297,6 +262,49 @@ class FeatureContext
 }
 ```
 
+You can further extend your DataMod like so:
+```php
+    ...
+
+    /**
+     * Special Method: This method if implemented is merged with the data provided.
+     * Any data provided overwrites the default data.
+     * This is a good opportunity to set foreign key values using the subSelect call.
+     *
+     * @param array $data The data passed in to the data mod.
+     *
+     * @return array
+     */
+    public static function getDefaults(array $data)
+    {
+        return [
+            'dateOfBirth' => '1989-05-10',
+            'gender' => BaseProvider::subSelect('Gender', 'type', ['id' => 1])
+        ];
+    }
+
+    /**
+     * Method uses subSelect to intelligently select the Id of the status and updates the user record.
+     * This is a common case where you want your feature files to be descriptive and won't just pass in id's, use
+     * descriptive names instead and infer values in the lower layers.
+     *
+     * @param string $status The status name (enabled/disabled).
+     * @param int $userId The user to update.
+     *
+     * @return void
+     */
+    public static function updateStatusById($status, $userId)
+    {
+        self::update(self::getBaseTable(), [
+            'status' => BaseProvider::subSelect('Status', 'id', ['name' => $status])
+        ], [
+            'id' => $userId
+        ])
+    }
+
+    ...
+```
+
 Build dynamic URLs
 -------------------
 
@@ -319,6 +327,27 @@ $routes = [
 ```
 
 Imagine the above with a table that isn't as friendly as a User and you will find the getKeyword method a very nice alternative. Plus you don't have to update references anywhere.
+
+Data Retriever Class
+--------------------
+
+The data retriever class makes it easy to work with test data sets and provide enough context around parameters passed around.
+We all know using array's are a pain. To ease the pain ever so slightly we have the following calls:
+- getRequiredData($searchArray, $key) // Implicit data conversion, throws exception when data not provided.
+- getOptionalData($searchArray, $key, $defaultValue) // Implicit data conversion
+
+To ease the pain of working with TableNodes, here are some calls:
+- loopMultiTable($tableNode, callbackFunction)
+- loopSingleTable($tableNode, callbackFunction)
+- loopPageFieldsTable($tableNode, callbackFunction)
+- transformTableNodeToSingleDataSet($tableNode)
+- transformTableNodeToMultiDataSets($tableNode)
+
+Data conversion built in for most common data types:
+- getFormattedValue($value, $fieldName) // Follows the following rules
+| Fieldname | Conversion                | More info                                                        |
+| %Date%    | Format to Y-m-d H:i:s     | This is particularly useful with dynamic dates such as yesterday |
+| %Amount%  | To pence, Multiply by 100 | User friendly input such as 100 amount equals 10000 pence        |
 
 ## Development
 
