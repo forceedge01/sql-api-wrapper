@@ -40,11 +40,23 @@ interface APIDecoratorInterface
      * Get the value of a column out of the keystore.
      * Depends on getBaseTable.
      *
-     * @param string $column The column name.
+     * @param string $key The column name.
+     * @param string|null $defaultValue The default value to return if not found.
+     *
+     * @return string|null
+     */
+    public static function getValue($key, $defaultValue = null);
+
+    /**
+     * Get the value of a column out of the keystore. Throws exception if not found.
+     * Depends on getBaseTable.
+     *
+     * @param string $key The column name.
+     * @param string $message The message to display when not found.
      *
      * @return string
      */
-    public static function getValue($column);
+    public static function getRequiredValue($key, $message = null);
 
     /**
      * Get a single record out mapped to your defined mapping. For single columns use
