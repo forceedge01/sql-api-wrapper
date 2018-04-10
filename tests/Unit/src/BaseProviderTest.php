@@ -2,9 +2,10 @@
 
 namespace Genesis\SQLExtensionWrapper\Tests;
 
+use Exception;
+use Genesis\SQLExtensionWrapper\BaseProvider;
 use Genesis\SQLExtension\Context\Interfaces\APIInterface;
 use Genesis\SQLExtension\Context\Interfaces\KeyStoreInterface;
-use Genesis\SQLExtensionWrapper\BaseProvider;
 use PHPUnit_Framework_TestCase;
 use ReflectionClass;
 use ReflectionProperty;
@@ -288,6 +289,61 @@ class BaseProviderTest extends PHPUnit_Framework_TestCase
     /**
      * testGetValue Test that getValue executes as expected.
      */
+    public function testGetRequiredValue()
+    {
+        // Prepare / Mock
+        $key = 'name';
+        $expectedResult = 'resulting value';
+
+        // Value of the id column will be resolved.
+        // When the table is not provided, the mapping is enforced.
+        $keyStoreMock = $this->createMock(KeyStoreInterface::class);
+        $keyStoreMock->expects($this->at(0))
+            ->method('getKeyword')
+            ->with('test.table.forename')
+            ->willReturn($expectedResult);
+        TestClass::$api->expects($this->once())
+            ->method('get')
+            ->with('keyStore')
+            ->willReturn($keyStoreMock);
+
+        // Execute
+        $result = TestClass::getRequiredValue($key);
+
+        // Assert Result
+        self::assertEquals($expectedResult, $result);
+    }
+
+    /**
+     * testGetValue Test that getValue executes as expected.
+     *
+     * @expectedException Exception
+     */
+    public function testGetRequiredValueNotFoundException()
+    {
+        // Prepare / Mock
+        $key = 'name';
+        $expectedResult = 'resulting value';
+
+        // Value of the id column will be resolved.
+        // When the table is not provided, the mapping is enforced.
+        $keyStoreMock = $this->createMock(KeyStoreInterface::class);
+        $keyStoreMock->expects($this->at(0))
+            ->method('getKeyword')
+            ->with('test.table.forename')
+            ->will($this->throwException(new Exception('key not found')));
+        TestClass::$api->expects($this->once())
+            ->method('get')
+            ->with('keyStore')
+            ->willReturn($keyStoreMock);
+
+        // Execute
+        TestClass::getRequiredValue($key);
+    }
+
+    /**
+     * testGetValue Test that getValue executes as expected.
+     */
     public function testGetValue()
     {
         // Prepare / Mock
@@ -311,6 +367,34 @@ class BaseProviderTest extends PHPUnit_Framework_TestCase
 
         // Assert Result
         self::assertEquals($expectedResult, $result);
+    }
+
+    /**
+     * testGetValue Test that getValue executes as expected.
+     */
+    public function testGetValueNotFound()
+    {
+        // Prepare / Mock
+        $key = 'name';
+        $expectedResult = 'resulting value';
+
+        // Value of the id column will be resolved.
+        // When the table is not provided, the mapping is enforced.
+        $keyStoreMock = $this->createMock(KeyStoreInterface::class);
+        $keyStoreMock->expects($this->at(0))
+            ->method('getKeyword')
+            ->with('test.table.forename')
+            ->will($this->throwException(new Exception('key not found')));
+        TestClass::$api->expects($this->once())
+            ->method('get')
+            ->with('keyStore')
+            ->willReturn($keyStoreMock);
+
+        // Execute
+        $result = TestClass::getValue($key);
+
+        // Assert Result
+        self::assertNull($result);
     }
 
     /**

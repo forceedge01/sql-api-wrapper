@@ -171,7 +171,7 @@ abstract class BaseProvider implements APIDecoratorInterface, DataModInterface
     }
 
     /**
-     * Get the value of a column out of the keystore.
+     * Get the value of a column out of the keystore. Throws exception if not found.
      * Depends on getBaseTable.
      *
      * @param string $key The column name.
@@ -179,7 +179,7 @@ abstract class BaseProvider implements APIDecoratorInterface, DataModInterface
      *
      * @return string
      */
-    public static function getValue($key)
+    public static function getRequiredValue($key)
     {
         $mapping = self::getFieldMapping($key);
 
@@ -189,6 +189,31 @@ abstract class BaseProvider implements APIDecoratorInterface, DataModInterface
                 '.' .
                 $mapping
             );
+    }
+
+    /**
+     * Get the value of a column out of the keystore. Null if not found.
+     * Depends on getBaseTable.
+     *
+     * @param string $key The column name.
+     * @param string|null $table The table name.
+     *
+     * @return string|null Null if not found.
+     */
+    public static function getValue($key)
+    {
+        $mapping = self::getFieldMapping($key);
+
+        try {
+            return static::getAPI()->get('keyStore')
+                ->getKeyword(
+                    self::getBaseTableForCaller() .
+                    '.' .
+                    $mapping
+                );
+        } catch (Exception $e) {
+            return null;
+        }
     }
 
     /**

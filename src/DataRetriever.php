@@ -84,7 +84,7 @@ class DataRetriever
 
     /**
      * @param TableNode $tableNode
-     * @param callable $func
+     * @param callable $func Receives the row number and the complete value set in as args.
      *
      * @example TableNode:
      * | Field       | Value      |

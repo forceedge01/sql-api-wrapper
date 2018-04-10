@@ -4,6 +4,7 @@ namespace Genesis\SQLExtensionWrapper;
 
 use Behat\Behat\Context\Context;
 use Behat\Gherkin\Node\TableNode;
+use Exception;
 
 /**
  * DecoratedSQLContext class. This class gives you context step definitions out of the box that work with your
@@ -39,7 +40,7 @@ class DataModSQLContext implements Context
      */
     public function givenIACreateFixture($dataModRef, TableNode $where)
     {
-        $dataMod = $this->resolveEntity($dataModRef);
+        $dataMod = $this->resolveDataMod($dataModRef);
         $dataSet = DataRetriever::transformTableNodeToSingleDataSet($where);
 
         $dataMod::createFixture(
@@ -58,7 +59,7 @@ class DataModSQLContext implements Context
      */
     public function givenIMultipleCreateFixtures($dataModRef, TableNode $where)
     {
-        $dataMod = $this->resolveEntity($dataModRef);
+        $dataMod = $this->resolveDataMod($dataModRef);
         $dataSets = DataRetriever::transformTableNodeToMultiDataSets($where);
 
         foreach ($dataSets as $dataSet) {
@@ -96,23 +97,25 @@ class DataModSQLContext implements Context
     }
 
     /**
-     * @param string $entity
+     * @param string $dataModRef
      *
      * @return string
      */
-    private function resolveEntity($entity)
+    private function resolveDataMod($dataModRef)
     {
         // If we found a custom datamod mapping use that.
-        if (isset(self::$dataModMapping[$entity])) {
-            return self::$dataModMapping[$entity];
+        if (isset(self::$dataModMapping[$dataModRef])) {
+            return self::$dataModMapping[$dataModRef];
         }
 
         // If we've got a global namespace where all the datamods reside, just use that.
         if (isset(self::$dataModMapping['*'])) {
-            return self::$dataModMapping['*'] . $entity;
+            return self::$dataModMapping['*'] . $dataModRef;
         }
 
-        // Try to load the mapping anyway.
-        return $entity;
+        throw new Exception(
+            'DataMod ' . $dataModRef . ' not configured in data mod mapping, mapping available: ' .
+            print_r(self::$dataModMapping, true)
+        );
     }
 }
