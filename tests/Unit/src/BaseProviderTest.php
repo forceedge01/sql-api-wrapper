@@ -343,6 +343,34 @@ class BaseProviderTest extends PHPUnit_Framework_TestCase
 
     /**
      * testGetValue Test that getValue executes as expected.
+     *
+     * @expectedException Exception
+     * @expectedExceptionMessage Must provide a key!
+     */
+    public function testGetRequiredValueNotFoundExceptionCustomMessage()
+    {
+        // Prepare / Mock
+        $key = 'name';
+        $expectedResult = 'resulting value';
+
+        // Value of the id column will be resolved.
+        // When the table is not provided, the mapping is enforced.
+        $keyStoreMock = $this->createMock(KeyStoreInterface::class);
+        $keyStoreMock->expects($this->at(0))
+            ->method('getKeyword')
+            ->with('test.table.forename')
+            ->will($this->throwException(new Exception('key not found')));
+        TestClass::$api->expects($this->once())
+            ->method('get')
+            ->with('keyStore')
+            ->willReturn($keyStoreMock);
+
+        // Execute
+        TestClass::getRequiredValue($key, 'Must provide a key!');
+    }
+
+    /**
+     * testGetValue Test that getValue executes as expected.
      */
     public function testGetValue()
     {
@@ -395,6 +423,34 @@ class BaseProviderTest extends PHPUnit_Framework_TestCase
 
         // Assert Result
         self::assertNull($result);
+    }
+
+    /**
+     * testGetValue Test that getValue executes as expected.
+     */
+    public function testGetValueNotFoundDefaultValue()
+    {
+        // Prepare / Mock
+        $key = 'name';
+        $expectedResult = 'resulting value';
+
+        // Value of the id column will be resolved.
+        // When the table is not provided, the mapping is enforced.
+        $keyStoreMock = $this->createMock(KeyStoreInterface::class);
+        $keyStoreMock->expects($this->at(0))
+            ->method('getKeyword')
+            ->with('test.table.forename')
+            ->will($this->throwException(new Exception('key not found')));
+        TestClass::$api->expects($this->once())
+            ->method('get')
+            ->with('keyStore')
+            ->willReturn($keyStoreMock);
+
+        // Execute
+        $result = TestClass::getValue($key, 'randomness');
+
+        // Assert Result
+        self::assertEquals('randomness', $result);
     }
 
     /**

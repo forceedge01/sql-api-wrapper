@@ -175,32 +175,11 @@ abstract class BaseProvider implements APIDecoratorInterface, DataModInterface
      * Depends on getBaseTable.
      *
      * @param string $key The column name.
-     * @param string|null $table The table name.
+     * @param string $message The message to display when not found.
      *
      * @return string
      */
-    public static function getRequiredValue($key)
-    {
-        $mapping = self::getFieldMapping($key);
-
-        return static::getAPI()->get('keyStore')
-            ->getKeyword(
-                self::getBaseTableForCaller() .
-                '.' .
-                $mapping
-            );
-    }
-
-    /**
-     * Get the value of a column out of the keystore. Null if not found.
-     * Depends on getBaseTable.
-     *
-     * @param string $key The column name.
-     * @param string|null $table The table name.
-     *
-     * @return string|null Null if not found.
-     */
-    public static function getValue($key)
+    public static function getRequiredValue($key, $message = null)
     {
         $mapping = self::getFieldMapping($key);
 
@@ -212,7 +191,32 @@ abstract class BaseProvider implements APIDecoratorInterface, DataModInterface
                     $mapping
                 );
         } catch (Exception $e) {
-            return null;
+            throw new Exception($message . ' - ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Get the value of a column out of the keystore.
+     * Depends on getBaseTable.
+     *
+     * @param string $key The column name.
+     * @param string|null $defaultValue The default value to return if not found.
+     *
+     * @return string|null
+     */
+    public static function getValue($key, $defaultValue = null)
+    {
+        $mapping = self::getFieldMapping($key);
+
+        try {
+            return static::getAPI()->get('keyStore')
+                ->getKeyword(
+                    self::getBaseTableForCaller() .
+                    '.' .
+                    $mapping
+                );
+        } catch (Exception $e) {
+            return $defaultValue;
         }
     }
 
