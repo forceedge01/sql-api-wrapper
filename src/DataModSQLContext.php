@@ -45,7 +45,7 @@ class DataModSQLContext implements Context
 
         // You don't need to necessarily have a where clause to create a fixture.
         $uniqueKey = null;
-        $dataSet = null;
+        $dataSet = array();
         if ($where) {
             $dataSet = DataRetriever::transformTableNodeToSingleDataSet($where);
             $uniqueKey = key($dataSet);
