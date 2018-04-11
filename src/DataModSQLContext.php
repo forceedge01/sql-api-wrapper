@@ -31,6 +31,7 @@ class DataModSQLContext implements Context
     }
 
     /**
+     * @Given I have a :dataModRef fixture
      * @Given I have a :dataModRef fixture with the following data set:
      *
      * Note: The first row value in the TableNode is considered the unique key.
@@ -38,14 +39,21 @@ class DataModSQLContext implements Context
      * @param string $dataModRef
      * @param TableNode $where
      */
-    public function givenIACreateFixture($dataModRef, TableNode $where)
+    public function givenIACreateFixture($dataModRef, TableNode $where = null)
     {
         $dataMod = $this->resolveDataMod($dataModRef);
-        $dataSet = DataRetriever::transformTableNodeToSingleDataSet($where);
+
+        // You don't need to necessarily have a where clause to create a fixture.
+        $uniqueKey = null;
+        $dataSet = array();
+        if ($where) {
+            $dataSet = DataRetriever::transformTableNodeToSingleDataSet($where);
+            $uniqueKey = key($dataSet);
+        }
 
         $dataMod::createFixture(
             $dataSet,
-            key($dataSet)
+            $uniqueKey
         );
     }
 
