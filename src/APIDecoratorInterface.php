@@ -103,8 +103,25 @@ interface APIDecoratorInterface
     public static function restoreSession();
 
     /**
-     * TODO: take the reference of a dataMod as the table, and resolve datamapping from it.
+     * Construct an external reference clause for the query.
+     * Note: This will only work with the first result returned.
      *
+     * @param string $column The column to select within the table.
+     * @param array $where The array to filter the values from.
+     *
+     * @example Example usage: Update postcode where address Id is provided.
+     *
+     * class::update('Address', [
+     *     'postCodeId' => class::subSelect('PostCode', 'id', ['code'=> 'B237QQ'])
+     * ], [
+     *     'id' => $addressId
+     * ]);
+     *
+     * @return string The subSelect external ref query.
+     */
+    public static function subSelect($column, array $where);
+
+    /**
      * Construct an external reference clause for the query.
      * Note: This will only work with the first result returned.
      *
@@ -122,7 +139,7 @@ interface APIDecoratorInterface
      *
      * @return string The subSelect external ref query.
      */
-    public static function subSelect($table, $column, array $where);
+    public static function rawSubSelect($table, $column, array $where);
 
     /**
      * Their can only be one bridge registered at any given time.

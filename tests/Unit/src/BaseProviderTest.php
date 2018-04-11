@@ -587,9 +587,9 @@ class BaseProviderTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * testSubSelect Test that subSelect executes as expected.
+     * testRawSubSelect Test that rawSubSelect executes as expected.
      */
-    public function testSubSelect()
+    public function testRawSubSelect()
     {
         // Prepare / Mock
         $table = 'User';
@@ -601,10 +601,30 @@ class BaseProviderTest extends PHPUnit_Framework_TestCase
             ->with($table, $column, $where)
             ->willReturn('[User.email|name:Abdul,dob:10-05-1989]');
 
-        $result = TestClass::subSelect($table, $column, $where);
+        $result = TestClass::rawSubSelect($table, $column, $where);
 
         // Assert Result
         self::assertEquals('[User.email|name:Abdul,dob:10-05-1989]', $result);
+    }
+
+    /**
+     * testSubSelect Test that subSelect executes as expected.
+     */
+    public function testSubSelect()
+    {
+        // Prepare / Mock
+        $column = 'name';
+        $where = ['dateOfBirth' => '10-05-1989'];
+
+        TestClass::$api->expects($this->once())
+            ->method('subSelect')
+            ->with(TestClass::$table, 'forename', ['dob' => '10-05-1989'])
+            ->willReturn('[test.table.forename|dob:10-05-1989]');
+
+        $result = TestClass::subSelect($column, $where);
+
+        // Assert Result
+        self::assertEquals('[test.table.forename|dob:10-05-1989]', $result);
     }
 
     /**
