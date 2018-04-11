@@ -62,7 +62,8 @@ The wrapper provides with powerful tools around the [behat-sql-extension](https:
 - getColumn(string $column, array $where) // Returns a single column value from the database.
 - getValue(string $key) // Get key value based on mapping.
 - truncate() // Truncates a table.
-- subSelect(string $table, string $column, array $where) // Provides the ability to sub select a column for any query.
+- subSelect(string $column, array $where) // Provides the ability to sub select a column for any query.
+- rawSubSelect(string $table, string $column, array $where) // Provides the ability to sub select a column for any query without a data mod.
 - saveSession(string $primaryKey) // Save the current session for later re-use.
 - restoreSession() // Restore the session saved by saveSession.
 - getRequiredData(array $data, string $key) // Extended: Extracts value from an array.
@@ -269,7 +270,7 @@ You can further extend your DataMod like so:
     {
         return [
             'dateOfBirth' => '1989-05-10',
-            'gender' => BaseProvider::subSelect('Gender', 'type', ['id' => 1])
+            'gender' => Gender::subSelect('type', ['id' => 1])
         ];
     }
 
@@ -286,7 +287,7 @@ You can further extend your DataMod like so:
     public static function updateStatusById($status, $userId)
     {
         self::update(self::getBaseTable(), [
-            'status' => BaseProvider::subSelect('Status', 'id', ['name' => $status])
+            'status' => BaseProvider::rawSubSelect('Status', 'id', ['name' => $status])
         ], [
             'id' => $userId
         ])
