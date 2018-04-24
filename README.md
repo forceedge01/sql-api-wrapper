@@ -40,12 +40,16 @@ default:
         default:
             contexts:
                 - Genesis\SQLExtensionWrapper\DataModSQLContext:
+                    debug: false
+                    userUniqueRef: aq
                     dataModMapping:
-                        - debug: false
-                        - userUniqueRef: aq # Appended to records created by createFixture call to make records unique per user/runner.
                         - "*": \QuickPack\Model\ # Configure path for all data mods using *.
                         - "User": \QuickPack\Model\User\User # Configure single data mod.
 ```
+
+debug - Turns debugging on off.
+userUniqueRef: Appends the string onto first column of data provided to the fixture step definitions if its a string. This is so every user has its own unique data if multiple users are targeting a single database.
+dataModMapping: Point where your dataMods are via the namespace.
 
 If an exact match for a dataMod is not found, the global path set (*) is used.
 
