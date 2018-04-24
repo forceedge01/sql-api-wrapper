@@ -156,7 +156,7 @@ class DataRetriever
             return $date->format('Y-m-d H:i:s');
         }
 
-        if (strpos($field, 'Amount') !== false) {
+        if (strpos($field, 'Amount') !== false && is_numeric($value)) {
             return $value * 100;
         }
 

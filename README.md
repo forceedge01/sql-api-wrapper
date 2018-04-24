@@ -13,6 +13,8 @@ DataModSQLContext
 ------------------
 ```gherkin
 # Insert single entry for a datamod.
+Given I have a "User" fixture
+# OR with specific data
 Given I have a "User" fixture with the following data set:
 | name  | Wahab Qureshi              |
 | email | its.inevitable@hotmail.com |
@@ -22,7 +24,12 @@ Given I have multiple "User" fixtures with the following data sets:
 | name           | email                      |
 | Wahab Qureshi  | its.inevitable@hotmail.com |
 | Sabhat Qureshi | next-gen-coder@hotmail.com |
+| Jawad Qureshi  | to-be-coder@hotmail.com    |
 ```
+
+The createFixture call will attempt to delete the existing record before it creates another one so you always end up
+with a fresh copy. As easy as it sounds, foreign key constraints may not let that happen. In cases like these you can
+disable foreign key checks on the test database (most of the time you won't need to do this).
 
 For the above to work, you will have to set the dataMod mapping on the context class. You can do that by:
 
@@ -34,6 +41,8 @@ default:
             contexts:
                 - Genesis\SQLExtensionWrapper\DataModSQLContext:
                     dataModMapping:
+                        - debug: false
+                        - userUniqueRef: aq # Appended to records created by createFixture call to make records unique per user/runner.
                         - "*": \QuickPack\Model\ # Configure path for all data mods using *.
                         - "User": \QuickPack\Model\User\User # Configure single data mod.
 ```

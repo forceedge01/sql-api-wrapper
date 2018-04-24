@@ -18,16 +18,24 @@ class DataModSQLContext implements Context
     private static $dataModMapping;
 
     /**
+     * @var string
+     */
+    private static $userUniqueRef;
+
+    /**
      * @param array $dataModMapping
      * @param boolean $debug
+     * @param string $userUniqueRef Will be appended to new data created to separate data based on users.
+     * Best to limit it to 2 characters.
      */
-    public function __construct(array $dataModMapping = array(), $debug = false)
+    public function __construct(array $dataModMapping = array(), $debug = false, $userUniqueRef = null)
     {
         if ($debug) {
             define('DEBUG_MODE', 1);
         }
 
         self::setDataModMappingFromBehatYamlFile($dataModMapping);
+        self::$userUniqueRef = $userUniqueRef;
     }
 
     /**
@@ -49,6 +57,10 @@ class DataModSQLContext implements Context
         if ($where) {
             $dataSet = DataRetriever::transformTableNodeToSingleDataSet($where);
             $uniqueKey = key($dataSet);
+
+            if (! is_numeric($dataSet[$uniqueKey])) {
+                $dataSet[$uniqueKey] .= self::$userUniqueRef;
+            }
         }
 
         $dataMod::createFixture(
@@ -58,7 +70,7 @@ class DataModSQLContext implements Context
     }
 
     /**
-     * @Given I have multiple :dataModRef fixtures with the following data sets:
+     * @Given I have multiple :dataModRef fixtures with the following data set(s):
      *
      * Note: The first column value in the TableNode is considered the unique key.
      *
@@ -71,9 +83,15 @@ class DataModSQLContext implements Context
         $dataSets = DataRetriever::transformTableNodeToMultiDataSets($where);
 
         foreach ($dataSets as $dataSet) {
+            $uniqueKey = key($dataSet);
+
+            if (! is_numeric($dataSet[$uniqueKey])) {
+                $dataSet[$uniqueKey] .= self::$userUniqueRef;
+            }
+
             $dataMod::createFixture(
                 $dataSet,
-                key($dataSet)
+                $uniqueKey
             );
         }
     }
