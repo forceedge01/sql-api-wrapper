@@ -3,6 +3,12 @@
 The idea is to declutter the framework by separating logic that relates to data manipulation in the database vs interactions on
 the web interface. This extension provides a framework where you will configure how your database tables will be interacted with and provide a very easy context class that leverages this configuration to manipulate the data for you.
 
+Release details:
+----------------
+Major: First version release.
+Minor: Ability to specify a unique string for each user from behat.yml for data creation.
+Patch: Fixed fatal error, exception thrown when non-existant dataMod used in step definition.
+
 Tools provided by this package:
 - DataModSQLContext - Use your data mods directly with step defintions provided by this class. Just register with the behat.yml
 file and you are good to go.

@@ -5,6 +5,7 @@ namespace Genesis\SQLExtensionWrapper;
 use Behat\Behat\Context\Context;
 use Behat\Gherkin\Node\TableNode;
 use Exception;
+use Genesis\SQLExtensionWrapper\Exception\DataModNotFoundException;
 
 /**
  * DecoratedSQLContext class. This class gives you context step definitions out of the box that work with your
@@ -49,7 +50,7 @@ class DataModSQLContext implements Context
      */
     public function givenIACreateFixture($dataModRef, TableNode $where = null)
     {
-        $dataMod = $this->resolveDataMod($dataModRef);
+        $dataMod = $this->getDataMod($dataModRef);
 
         // You don't need to necessarily have a where clause to create a fixture.
         $uniqueKey = null;
@@ -79,7 +80,7 @@ class DataModSQLContext implements Context
      */
     public function givenIMultipleCreateFixtures($dataModRef, TableNode $where)
     {
-        $dataMod = $this->resolveDataMod($dataModRef);
+        $dataMod = $this->getDataMod($dataModRef);
         $dataSets = DataRetriever::transformTableNodeToMultiDataSets($where);
 
         foreach ($dataSets as $dataSet) {
@@ -120,6 +121,22 @@ class DataModSQLContext implements Context
     public static function setDataModMapping(array $mapping)
     {
         self::$dataModMapping = $mapping;
+    }
+
+    /**
+     * @param string $dataModRef
+     *
+     * @return DataModInterface
+     */
+    private function getDataMod($dataModRef)
+    {
+        $dataMod = $this->resolveDataMod($dataModRef);
+
+        if (! class_exists($dataMod)) {
+            throw new DataModNotFoundException($dataModRef, self::$dataModMapping);
+        }
+
+        return $dataMod;
     }
 
     /**
