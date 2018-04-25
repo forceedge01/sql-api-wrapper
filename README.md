@@ -88,9 +88,49 @@ Note: All methods provided by the wrapper are static, because they have a global
 
 ## Example usage
 
-Creating a DataMod to use in your context files.
+Creating a DataMod to use in your context files. This is as easy as just extending the BaseProvider class from your dataMods.
 
-To use this decorator effectively, you will have to make good use of polymorphism. Extend the BaseProvider in your project and implement the abstract method getAPI(). This method needs to return an object that implements Genesis\SQLExtension\Context\Interfaces\APIInterface.
+```php
+# User.php
+<?php
+
+use Genesis\SQLExtensionWrapper\BaseProvider;
+
+class User extends BaseProvider
+{
+    /**
+     * Returns the base table to interact with.
+     *
+     * @return string
+     */
+    public static function getBaseTable()
+    {
+        // Ridiculous naming as we find with most databases.
+        return 'MySuperApplication.MyUsersNew';
+    }
+
+    /**
+     * Returns the data mapping for the base table. This is the data that is allowed to be passed in
+     * to the data mod. <input> => <mapping>
+     *
+     * @return array
+     */
+    public static function getDataMapping()
+    {
+        return [
+            'id' => 'user_id',
+            'name' => 'f_name',
+            'email' => 'electronic_address',
+            'dateOfBirth' => 'd_o_b',
+            'gender' => 'gender',
+            'status' => 'real_status'
+        ];
+    }
+}
+
+```
+
+To use a different version of the Api, you will have to make good use of polymorphism. Extend the BaseProvider in your project and implement the abstract method getAPI(). This method needs to return an object that implements Genesis\SQLExtension\Context\Interfaces\APIInterface.
 
 ```php
 # BaseDataMod.php
@@ -134,47 +174,9 @@ abstract class BaseDataMod extends BaseProvider
 }
 ```
 
-Then further extend your class to use with your data component classes.
+Then extend your data mods from the above class instead.
 
-```php
-# User.php
-<?php
-
-class User extends BaseDataMod
-{
-    /**
-     * Returns the base table to interact with.
-     *
-     * @return string
-     */
-    public static function getBaseTable()
-    {
-        // Ridiculous naming as we find with most databases.
-        return 'MySuperApplication.MyUsersNew';
-    }
-
-    /**
-     * Returns the data mapping for the base table. This is the data that is allowed to be passed in
-     * to the data mod. <input> => <mapping>
-     *
-     * @return array
-     */
-    public static function getDataMapping()
-    {
-        return [
-            'id' => 'user_id',
-            'name' => 'f_name',
-            'email' => 'electronic_address',
-            'dateOfBirth' => 'd_o_b',
-            'gender' => 'gender',
-            'status' => 'real_status'
-        ];
-    }
-}
-
-```
-
-Using your UserDataMod in your context file.
+You can now use yoru data mods as above or directly using PHP code in step definitions. Using your UserDataMod in your context file.
 
 ```php
 # FeatureContext.php
@@ -308,6 +310,10 @@ You can further extend your DataMod like so:
 
     ...
 ```
+
+The getDefaults() method is special, it will be called automatically if it exists. It allows you to set default values
+for any column. An example could be a boolean flag of some sort that you don't want to keep defining or want to override 
+optionally. Another example could be setting foreign keys correctly.
 
 Build dynamic URLs
 -------------------

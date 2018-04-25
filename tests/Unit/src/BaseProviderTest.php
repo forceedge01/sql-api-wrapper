@@ -100,6 +100,47 @@ class BaseProviderTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * testSetCredentails Test that setCredentials executes as expected.
+     */
+    public function testSetCredentails()
+    {
+        $result = $this->getPrivatePropertyValue('sqlApi');
+
+        self::assertNull($result);
+
+        // Prepare / Mock
+        $credentials = [
+            'engine' => 'dblib',
+            'name' => 'testname',
+            'username' => 'testusername',
+            'password' => 'testpassword',
+            'port' => 'testport'
+        ];
+    
+        // Execute
+        TestClass::setCredentials($credentials);
+
+        $result = $this->getPrivatePropertyValue('sqlApi');
+
+        self::assertInstanceOf(APIInterface::class, $result);
+    }
+
+    /**
+     * testGetApi Test that getApi executes as expected.
+     */
+    public function testGetApi()
+    {
+        // Prepare / Mock
+        $this->setPrivatePropertyValue('sqlApi', 'banana');
+    
+        // Execute
+        $result = BaseProvider::getApi();
+    
+        // Assert Result
+        self::assertEquals('banana', $result);
+    }
+
+    /**
      * testInsertSeedDataIfExists Test that insertSeedDataIfExists executes as expected.
      */
     public function testInsertSeedDataIfExists()
@@ -798,7 +839,7 @@ class BaseProviderTest extends PHPUnit_Framework_TestCase
      */
     private function getPrivatePropertyValue($property)
     {
-        $reflectionProperty = new ReflectionProperty(BaseProvider::class, 'savedSession');
+        $reflectionProperty = new ReflectionProperty(BaseProvider::class, $property);
         $reflectionProperty->setAccessible(true);
 
         return $reflectionProperty->getValue();
@@ -806,7 +847,7 @@ class BaseProviderTest extends PHPUnit_Framework_TestCase
 
     private function setPrivatePropertyValue($property, $value)
     {
-        $reflectionProperty = new ReflectionProperty(BaseProvider::class, 'savedSession');
+        $reflectionProperty = new ReflectionProperty(BaseProvider::class, $property);
         $reflectionProperty->setAccessible(true);
 
         $reflectionProperty->setValue(TestClass::class, $value);

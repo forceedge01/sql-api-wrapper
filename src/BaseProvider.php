@@ -4,7 +4,7 @@ namespace Genesis\SQLExtensionWrapper;
 
 use Exception;
 use Genesis\SQLExtensionWrapper\BridgeInterface;
-use Genesis\SQLExtension\Context\API;
+use Genesis\SQLExtension\Context;
 
 /**
 * This class serves as a Decorator for the Genesis API class.
@@ -23,13 +23,42 @@ abstract class BaseProvider implements APIDecoratorInterface, DataModInterface
     private static $bridge;
 
     /**
-     * @return API
+     * @var Context\Api
+     */
+    private static $sqlApi;
+
+    /**
+     * @return array
+     */
+    public static function setCredentials(array $credentials)
+    {
+        self::setApi($credentials);
+    }
+
+    /**
+     * @param array $credentials
+     */
+    private static function setApi(array $credentials)
+    {
+        if (! self::$sqlApi) {
+            self::$sqlApi = new Context\API(
+                new Context\DBManager(new Context\DatabaseProviders\Factory(), $credentials),
+                new Context\SQLBuilder(),
+                new Context\LocalKeyStore()
+            );
+        }
+    }
+
+    /**
+     * Call the setCredentails method in your feature context constructor file to get this up and running.
+     *
+     * Override if you want to use a different version of the API.
+     *
+     * @return Context\Api
      */
     public static function getApi()
     {
-        throw new Exception(
-            'You must implement a version of the getApi call, please follow instructions in the README.'
-        );
+        return self::$sqlApi;
     }
 
     /**
