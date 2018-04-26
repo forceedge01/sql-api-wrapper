@@ -51,8 +51,8 @@ default:
                     debug: false
                     userUniqueRef: aq
                     dataModMapping:
-                        - "*": \QuickPack\Model\ # Configure path for all data mods using *.
-                        - "User": \QuickPack\Model\User\User # Configure single data mod.
+                        - "*": \QuickPack\DataMod\ # Configure path for all data mods using *.
+                        - "User": \QuickPack\DataMod\User\User # Configure single data mod.
 ```
 
 debug - Turns debugging on off.
@@ -100,6 +100,8 @@ Creating a DataMod to use in your context files. This is as easy as just extendi
 ```php
 # User.php
 <?php
+
+namespace QuickPack\DataMod\User;
 
 use Genesis\SQLExtensionWrapper\BaseProvider;
 
@@ -190,6 +192,7 @@ You can now use yoru data mods as above or directly using PHP code in step defin
 <?php
 
 use Exception;
+use QuickPack\DataMod\User\User;
 
 /**
  * Ideally you would want to separate the data step definitions from interactive/assertive step definitions.
@@ -208,7 +211,7 @@ class FeatureContext
         // The name will be set to 'Wahab Qureshi'. The rest of the fields if required by the database will be autofilled
         // with fixture data, if they are nullable, null will be stored.
         // If the record exists already, it will be deleted based on the 'name' key provided.
-        UserDataMod::createFixture([
+        User::createFixture([
             'name' => 'Wahab Qureshi'
         ], 'name');
     }
@@ -221,16 +224,16 @@ class FeatureContext
     public function create10Users($count)
     {
         // Save this user's session.
-        UserDataMod::saveSession('id');
+        User::saveSession('id');
 
         // Create 10 random users.
         for($i = 0; $i < 10; $i++) {
             // Store the ids created for these users maybe?
-            $this->userIds[] = UserDataMod::createFixture();
+            $this->userIds[] = User::createFixture();
         }
 
         // Restore session of the user we created above.
-        UserDataMod::restoreSession();
+        User::restoreSession();
     }
 
     /**
@@ -245,10 +248,10 @@ class FeatureContext
         // And I have 10 Users
 
         // Retrieve data created, this will reference the user created by 'Given I have a User' as the session was preserved.
-        $id = UserDataMod::getValue('id');
-        $name = UserDataMod::getValue('name');
-        $dateOfBirth = UserDataMod::getValue('dateOfBirth');
-        $gender = UserDataMod::getValue('gender');
+        $id = User::getValue('id');
+        $name = User::getValue('name');
+        $dateOfBirth = User::getValue('dateOfBirth');
+        $gender = User::getValue('gender');
 
         // Assert that data is on the page.
         $this->assertSession()->assertTextOnPage($id);
@@ -274,7 +277,7 @@ class FeatureContext
 }
 ```
 
-You can further extend your DataMod like so:
+You can further extend your DataMod with other methods like so:
 
 ```php
     ...
