@@ -86,8 +86,8 @@ The wrapper provides with powerful tools around the [behat-sql-extension](https:
 - rawSubSelect(string $table, string $column, array $where) // Provides the ability to sub select a column for any query without a data mod.
 - saveSession(string $primaryKey) // Save the current session for later re-use.
 - restoreSession() // Restore the session saved by saveSession.
-- getRequiredData(array $data, string $key) // Extended: Extracts value from an array.
-- getOptionalData(array $data, string $key, mixed $default = null) // Extended: Optional value from an array, provide default otherwise.
+- getRequiredData(array $data, string $key, boolean $format) // Extended: Extracts value from an array.
+- getOptionalData(array $data, string $key, mixed $default = null, boolean $format = false) // Extended: Optional value from an array, provide default otherwise.
 - getFieldMapping(string $key) // Extended: Get field mapping provided in the getDataMapping method.
 - getKeyword(string $key) // Get the keyword for mapped key.
 
