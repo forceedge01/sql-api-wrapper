@@ -5,11 +5,11 @@ the web interface. This extension provides a framework where you will configure 
 
 Release details:
 ----------------
-Major: First version release.
+Major: Don't perform formatting unless flag passed in.
 
-Minor: Ability to specify a unique string for each user from behat.yml for data creation.
+Minor: NA.
 
-Patch: Fixed fatal error, exception thrown when non-existant dataMod used in step definition.
+Patch: NA.
 
 Tools provided by this package:
 - DataModSQLContext - Use your data mods directly with step defintions provided by this class. Just register with the behat.yml
