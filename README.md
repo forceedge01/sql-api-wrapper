@@ -6,7 +6,9 @@ the web interface. This extension provides a framework where you will configure 
 Release details:
 ----------------
 Major: First version release.
+
 Minor: Ability to specify a unique string for each user from behat.yml for data creation.
+
 Patch: Fixed fatal error, exception thrown when non-existant dataMod used in step definition.
 
 Tools provided by this package:
@@ -75,8 +77,7 @@ BaseProvide Class
 
 The wrapper provides with powerful tools around the [behat-sql-extension](https://github.com/forceedge01/behat-sql-extension) API class. Methods provided:
 
-- insertSeedDataIfExists() // Auto fires on construct.
-- createFixture(array $data = [], string $uniqueColumn = null) // Recreates a record for fresh usage.
+- createFixture(array $data = [], string $uniqueColumn = null) // Recreates a record for fresh usage. Overridable from data mod.
 - getSingle(array $where) // Returns a single record defined by the mapping.
 - getColumn(string $column, array $where) // Returns a single column value from the database.
 - getValue(string $key) // Get key value based on mapping.
@@ -348,7 +349,7 @@ Data Retriever Class
 The data retriever class makes it easy to work with test data sets and provide enough context around parameters passed around.
 We all know using array's are a pain. To ease the pain ever so slightly we have the following calls:
 - getRequiredData($searchArray, $key) // Implicit data conversion, throws exception when data not provided.
-- getOptionalData($searchArray, $key, $defaultValue) // Implicit data conversion
+- getOptionalData($searchArray, $key, $defaultValue, $format) // Explicit data conversion.
 
 To ease the pain of working with TableNodes, here are some calls:
 - loopMultiTable($tableNode, callbackFunction)

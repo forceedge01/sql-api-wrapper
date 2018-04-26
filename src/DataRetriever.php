@@ -13,17 +13,32 @@ use Traversable;
 class DataRetriever
 {
     /**
+     * @const Turn formatting on.
+     */
+    const FORMAT_ON = true;
+
+    /**
+     * @const Turn formatting off.
+     */
+    const FORMAT_OFF = false;
+
+    /**
      * Convenience method to get a required index value out of array.
      *
      * @param array $data The data to check.
      * @param string $key The index to look for.
+     * @param boolean $format Apply formatting on data.
      *
      * @return mixed Whatever the data index contains.
      */
-    public static function getRequiredData(array $data, $key)
+    public static function getRequiredData(array $data, $key, $format = false)
     {
         if (! array_key_exists($key, $data)) {
             throw new Exception("Expect to find key '$key' in data: " . print_r($data, true));
+        }
+
+        if (! $format) {
+            return $data[$key];
         }
 
         return self::getFormattedValue($data[$key], $key);
@@ -35,14 +50,19 @@ class DataRetriever
      *
      * @param array $data The data to check.
      * @param string $key The index to look for.
-     * @param string $default The value to return if the key index is not defined.
+     * @param string $default The value to return if the key index is not defined. Formatting not applied.
+     * @param boolean $format Apply formatting on data.
      *
      * @return mixed Whatever the data index contains.
      */
-    public static function getOptionalData(array $data, $key, $default = null)
+    public static function getOptionalData(array $data, $key, $default = null, $format = false)
     {
         if (! array_key_exists($key, $data)) {
             return $default;
+        }
+
+        if (! $format) {
+            return $data[$key];
         }
 
         return self::getFormattedValue($data[$key], $key);
@@ -50,7 +70,7 @@ class DataRetriever
 
     /**
      * @param TableNode $tableNode
-     * @param callable $func
+     * @param callable $func Will receive rowNumber, Row data
      *
      * @example Table multiple values for the same target like:
      * | field1 | field2 | field3 |
@@ -67,7 +87,7 @@ class DataRetriever
 
     /**
      * @param TableNode $tableNode
-     * @param callable $func
+     * @param callable $func Will receive rowNumber, Column, Value
      *
      * @example TableNode:
      * | Column      | Value      |
@@ -79,7 +99,13 @@ class DataRetriever
      */
     public static function loopSingleTable(TableNode $tableNode, callable $func)
     {
-        return self::looper($tableNode->getRows(), $func);
+        $element = $tableNode->getRows();
+        $result = [];
+        foreach ($element as $index => $row) {
+            $result[] = $func($index, $row[0], $row[1]);
+        }
+
+        return $result;
     }
 
     /**
@@ -154,9 +180,7 @@ class DataRetriever
             $date = new DateTime($value);
 
             return $date->format('Y-m-d H:i:s');
-        }
-
-        if (strpos($field, 'Amount') !== false && is_numeric($value)) {
+        } elseif (strpos($field, 'Amount') !== false && is_numeric($value)) {
             return $value * 100;
         }
 

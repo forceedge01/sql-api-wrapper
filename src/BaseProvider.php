@@ -4,6 +4,7 @@ namespace Genesis\SQLExtensionWrapper;
 
 use Exception;
 use Genesis\SQLExtensionWrapper\BridgeInterface;
+use Genesis\SQLExtensionWrapper\Exception\RequiredDataException;
 use Genesis\SQLExtension\Context;
 
 /**
@@ -339,6 +340,21 @@ abstract class BaseProvider implements APIDecoratorInterface, DataModInterface
     public static function getKeyword($key)
     {
         return '{' . self::getBaseTableForCaller() . '.' . self::getFieldMapping($key) . '}';
+    }
+
+    /**
+     * @param array $indexes
+     * @param array $data
+     *
+     * @return void
+     */
+    protected static function requiredData(array $indexes, array $data)
+    {
+        foreach ($indexes as $index) {
+            if (! array_key_exists($index, $data)) {
+                throw new RequiredDataException($index, $indexes, $data);
+            }
+        }
     }
 
     /**
