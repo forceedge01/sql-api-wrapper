@@ -367,7 +367,7 @@ abstract class BaseProvider implements APIDecoratorInterface, DataModInterface
      *
      * @return void
      */
-    protected static function select(array $where)
+    public static function select(array $where)
     {
         self::ensureBaseTable();
         static::getAPI()->select(self::getBaseTableForCaller(), self::resolveDataFieldMappings($where));
@@ -379,7 +379,7 @@ abstract class BaseProvider implements APIDecoratorInterface, DataModInterface
      *
      * @return int The insert Id.
      */
-    protected static function insert(array $data)
+    public static function insert(array $data)
     {
         self::ensureBaseTable();
 
@@ -390,6 +390,10 @@ abstract class BaseProvider implements APIDecoratorInterface, DataModInterface
     }
 
     /**
+     * Since an update can cause chaos and affect other rows without immediately
+     * implications, this method should be used from within a method exposed
+     * by the data module with more context around what it intends to do.
+     *
      * This method is protected and should be implemented
      * by one your data modules, this is so you can provide more context around the action your taking.
      *
@@ -411,13 +415,13 @@ abstract class BaseProvider implements APIDecoratorInterface, DataModInterface
 
     /**
      * This method is protected and should be implemented
-     * by one your data modules, this is so you can provide more context around the action your taking.\
+     * by one your data modules, this is so you can provide more context around the action your taking.
      *
      * @param array $where The selection criteria.
      *
      * @return void
      */
-    protected static function delete(array $where)
+    public static function delete(array $where)
     {
         self::ensureBaseTable();
         static::getAPI()->delete(self::getBaseTableForCaller(), self::resolveDataFieldMappings($where));

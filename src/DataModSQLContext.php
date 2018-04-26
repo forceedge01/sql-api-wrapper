@@ -98,6 +98,21 @@ class DataModSQLContext implements Context
     }
 
     /**
+     * @Given I do not have a/any :dataModRef fixture(s)
+     * @Given I do not have a/any :dataModRef fixture(s) with the following data set:
+     */
+    public function iDoNotHaveAFixtureWithTheFollowingDataSet($dataModRef, TableNode $where = null)
+    {
+        $dataMod = $this->getDataMod($dataModRef);
+        $dataSet = [];
+        if ($where) {
+            $dataSet = DataRetriever::transformTableNodeToSingleDataSet($where);
+        }
+
+        $dataMod::delete($dataSet);
+    }
+
+    /**
      * @param array $dataModMapping
      */
     private static function setDataModMappingFromBehatYamlFile(array $dataModMapping = array())

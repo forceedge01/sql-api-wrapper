@@ -7,7 +7,7 @@ Release details:
 ----------------
 Major: Don't perform formatting unless flag passed in.
 
-Minor: NA.
+Minor: Opened up insert, delete methods for public usage from the base provider.
 
 Patch: NA.
 
