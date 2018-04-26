@@ -5,9 +5,11 @@ the web interface. This extension provides a framework where you will configure 
 
 Release details:
 ----------------
-Major: First version release.
-Minor: Ability to specify a unique string for each user from behat.yml for data creation.
-Patch: Fixed fatal error, exception thrown when non-existant dataMod used in step definition.
+Major: Don't perform formatting unless flag passed in.
+
+Minor: NA.
+
+Patch: NA.
 
 Tools provided by this package:
 - DataModSQLContext - Use your data mods directly with step defintions provided by this class. Just register with the behat.yml
@@ -75,8 +77,7 @@ BaseProvide Class
 
 The wrapper provides with powerful tools around the [behat-sql-extension](https://github.com/forceedge01/behat-sql-extension) API class. Methods provided:
 
-- insertSeedDataIfExists() // Auto fires on construct.
-- createFixture(array $data = [], string $uniqueColumn = null) // Recreates a record for fresh usage.
+- createFixture(array $data = [], string $uniqueColumn = null) // Recreates a record for fresh usage. Overridable from data mod.
 - getSingle(array $where) // Returns a single record defined by the mapping.
 - getColumn(string $column, array $where) // Returns a single column value from the database.
 - getValue(string $key) // Get key value based on mapping.
@@ -85,8 +86,8 @@ The wrapper provides with powerful tools around the [behat-sql-extension](https:
 - rawSubSelect(string $table, string $column, array $where) // Provides the ability to sub select a column for any query without a data mod.
 - saveSession(string $primaryKey) // Save the current session for later re-use.
 - restoreSession() // Restore the session saved by saveSession.
-- getRequiredData(array $data, string $key) // Extended: Extracts value from an array.
-- getOptionalData(array $data, string $key, mixed $default = null) // Extended: Optional value from an array, provide default otherwise.
+- getRequiredData(array $data, string $key, boolean $format) // Extended: Extracts value from an array.
+- getOptionalData(array $data, string $key, mixed $default = null, boolean $format = false) // Extended: Optional value from an array, provide default otherwise.
 - getFieldMapping(string $key) // Extended: Get field mapping provided in the getDataMapping method.
 - getKeyword(string $key) // Get the keyword for mapped key.
 
@@ -348,7 +349,7 @@ Data Retriever Class
 The data retriever class makes it easy to work with test data sets and provide enough context around parameters passed around.
 We all know using array's are a pain. To ease the pain ever so slightly we have the following calls:
 - getRequiredData($searchArray, $key) // Implicit data conversion, throws exception when data not provided.
-- getOptionalData($searchArray, $key, $defaultValue) // Implicit data conversion
+- getOptionalData($searchArray, $key, $defaultValue, $format) // Explicit data conversion.
 
 To ease the pain of working with TableNodes, here are some calls:
 - loopMultiTable($tableNode, callbackFunction)

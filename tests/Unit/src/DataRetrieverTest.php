@@ -70,14 +70,14 @@ class DataRetrieverTest extends PHPUnit_Framework_TestCase
         $key2 = 'Paid Amount';
     
         // Execute
-        $result = DataRetriever::getRequiredData($data, $key1);
+        $result = DataRetriever::getRequiredData($data, $key1, DataRetriever::FORMAT_ON);
     
         // Assert Result
         self::assertEquals('1989-05-10 00:00:00', $result);
 
 
         // Execute
-        $result = DataRetriever::getRequiredData($data, $key2);
+        $result = DataRetriever::getRequiredData($data, $key2, DataRetriever::FORMAT_ON);
     
         // Assert Result
         self::assertEquals(50000, $result);
@@ -174,14 +174,14 @@ class DataRetrieverTest extends PHPUnit_Framework_TestCase
         $key2 = 'Paid Amount';
     
         // Execute
-        $result = DataRetriever::getOptionalData($data, $key1);
+        $result = DataRetriever::getOptionalData($data, $key1, false, DataRetriever::FORMAT_ON);
     
         // Assert Result
         self::assertEquals('1989-05-10 00:00:00', $result);
 
 
         // Execute
-        $result = DataRetriever::getOptionalData($data, $key2);
+        $result = DataRetriever::getOptionalData($data, $key2, false, DataRetriever::FORMAT_ON);
     
         // Assert Result
         self::assertEquals(50000, $result);
@@ -248,9 +248,10 @@ class DataRetrieverTest extends PHPUnit_Framework_TestCase
         ];
 
         // Execute
-        $result = DataRetriever::loopSingleTable($tableNode, function ($row, $valueSet) use ($expectedResultSet) {
+        $result = DataRetriever::loopSingleTable($tableNode, function ($row, $column, $value) use ($expectedResultSet) {
             // Assert Result
-            self::assertEquals($expectedResultSet[$row], $valueSet);
+            self::assertEquals($expectedResultSet[$row][0], $column);
+            self::assertEquals($expectedResultSet[$row][1], $value);
 
             return 'the result is returned';
         });
