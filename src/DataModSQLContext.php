@@ -113,6 +113,40 @@ class DataModSQLContext implements Context
     }
 
     /**
+     * Useful when testing against API's. Not recommended to be used else where.
+     *
+     * @Then I should have a :dataModRef
+     * @Then I should have a :dataModRef with the following data set:
+     */
+    public function iShouldHaveAWithTheFollowingDataSet($dataModRef, TableNode $where = null)
+    {
+        $dataMod = $this->getDataMod($dataModRef);
+        $dataSet = [];
+        if ($where) {
+            $dataSet = DataRetriever::transformTableNodeToSingleDataSet($where);
+        }
+
+        $dataMod::assertExists($dataSet);
+    }
+
+    /**
+     * Useful when testing against API's. Not recommended to be used else where.
+     *
+     * @Then I should not have a :dataModRef
+     * @Then I should not have a :dataModRef with the following data set:
+     */
+    public function iShouldNotHaveAWithTheFollowingDataSet($dataModRef, TableNode $where = null)
+    {
+        $dataMod = $this->getDataMod($dataModRef);
+        $dataSet = [];
+        if ($where) {
+            $dataSet = DataRetriever::transformTableNodeToSingleDataSet($where);
+        }
+
+        $dataMod::assertNotExists($dataSet);
+    }
+
+    /**
      * @param array $dataModMapping
      */
     private static function setDataModMappingFromBehatYamlFile(array $dataModMapping = array())
