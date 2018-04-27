@@ -610,6 +610,44 @@ class BaseProviderTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * testAssertExists Test that assertExists executes as expected.
+     */
+    public function testAssertExists()
+    {
+        // Prepare / Mock
+        $where = ['name' => 'Jackie', 'id' => 20];
+
+        TestClass::$api->expects($this->once())
+            ->method('assertExists')
+            ->with('test.table', [
+                'forename' => 'Jackie',
+                'id' => 20
+            ]);
+    
+        // Execute
+        TestClass::assertExists($where);
+    }
+
+    /**
+     * testAssertNotExists Test that assertNotExists executes as expected.
+     */
+    public function testAssertNotExists()
+    {
+        // Prepare / Mock
+        $where = ['name' => 'Jackie', 'id' => 20];
+
+        TestClass::$api->expects($this->once())
+            ->method('assertNotExists')
+            ->with('test.table', [
+                'forename' => 'Jackie',
+                'id' => 20
+            ]);
+    
+        // Execute
+        TestClass::assertNotExists($where);
+    }
+
+    /**
      * testTruncate Test that truncate executes as expected.
      */
     public function testTruncateWithTable()

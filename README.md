@@ -7,11 +7,14 @@ Release details:
 ----------------
 Major: Don't perform formatting unless flag passed in.
 
-Minor: New step defintion for deletion. Opened up insert, delete methods for public usage from the base provider.
+Minor: 
+1. New step defintion for deletion. Opened up insert, delete methods for public usage from the base provider.
+2. New step definition for assertion against the database. (Use when testing Api's)
 
 Patch: NA.
 
 Tools provided by this package:
+--------------------------------
 - DataModSQLContext - Use your data mods directly with step defintions provided by this class. Just register with the behat.yml
 file and you are good to go.
 - Decorated API BaseProvider Class - for advanced and easy integration with data modules.
