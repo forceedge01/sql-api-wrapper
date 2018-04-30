@@ -51,7 +51,7 @@ default:
         default:
             contexts:
                 - Genesis\SQLExtensionWrapper\DataModSQLContext:
-                    debug: false
+                    debug: false # 1 for all debug, 2 for only SQL queries.
                     userUniqueRef: aq
                     dataModMapping:
                         - "*": \QuickPack\DataMod\ # Configure path for all data mods using *.

@@ -6,6 +6,7 @@ use Behat\Behat\Context\Context;
 use Behat\Gherkin\Node\TableNode;
 use Exception;
 use Genesis\SQLExtensionWrapper\Exception\DataModNotFoundException;
+use Genesis\SQLExtension\Context\Debugger;
 
 /**
  * DecoratedSQLContext class. This class gives you context step definitions out of the box that work with your
@@ -32,7 +33,7 @@ class DataModSQLContext implements Context
     public function __construct(array $dataModMapping = array(), $debug = false, $userUniqueRef = null)
     {
         if ($debug) {
-            define('DEBUG_MODE', 1);
+            Debugger::enable($debug);
         }
 
         self::setDataModMappingFromBehatYamlFile($dataModMapping);
