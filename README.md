@@ -374,7 +374,7 @@ Just keep on using your standard visit page step definition using the genesis/te
     public function iAmOnThePage($arg1)
     {
         $url = Routing::getRoute($arg1, function ($url) {
-            return DataAbstraction::getApi()->get('keyStore')->parseKeywordsInString($url);
+            return BaseProvider::getApi()->get('keyStore')->parseKeywordsInString($url);
         });
 
         $this->getMink()->getSession()->visit($url);
