@@ -362,7 +362,23 @@ $routes = [
 $routes = [
     'user' => '/user/' . User::getKeyword('id') . '/'
 ];
+```
 
+Just keep on using your standard visit page step definition using the genesis/test-routing
+
+```php
+    /**
+     * @Given I am on the :arg1 page
+     * @Given I visit the :arg1 page
+     */
+    public function iAmOnThePage($arg1)
+    {
+        $url = Routing::getRoute($arg1, function ($url) {
+            return DataAbstraction::getApi()->get('keyStore')->parseKeywordsInString($url);
+        });
+
+        $this->getMink()->getSession()->visit($url);
+    }
 ```
 
 Data Retriever Class
