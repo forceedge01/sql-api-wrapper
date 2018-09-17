@@ -42,9 +42,15 @@ The createFixture call will attempt to delete the existing record before it crea
 with a fresh copy. As easy as it sounds, foreign key constraints may not let that happen. In cases like these you can
 disable foreign key checks on the test database (most of the time you won't need to do this).
 
-For the above to work, you will have to set the dataMod mapping on the context class. You can do that by:
+Installation
+-------------
 
-- Configurating in the behat.yml file:
+```
+composer require --dev genesis/sql-api-wrapper
+```
+
+Sample configurating in the behat.yml file:
+
 ```yaml
 default:
     suites:
@@ -52,17 +58,15 @@ default:
             contexts:
                 - Genesis\SQLExtensionWrapper\DataModSQLContext:
                     debug: false # 1 for all debug, 2 for only SQL queries.
-                    userUniqueRef: aq
-                    dataModMapping:
+                    userUniqueRef: aq # Optional
+                    dataModMapping: # Optional
                         "*": \QuickPack\DataMod\ # Configure path for all data mods using *.
                         "User": \QuickPack\DataMod\User\User # Configure single data mod.
 ```
 
 debug - Turns debugging on off.
 userUniqueRef: Appends the string onto first column of data provided to the fixture step definitions if its a string. This is so every user has its own unique data if multiple users are targeting a single database.
-dataModMapping: Point where your dataMods are via the namespace.
-
-If an exact match for a dataMod is not found, the global path set (*) is used.
+dataModMapping: Point where your dataMods are via the namespace. (Optional)
 
 - Set the dataMod namespace mapping directly on the context class. This way you don't have to set it up for each suite in behat.yml file.
 
@@ -85,16 +89,20 @@ class FeatureContext
             'username' => 'myUsername',
             'password' => 'myPassword'
         ]);
-
-        // Setup data mod mapping. Can also be done from behat.yml
-        // This is the default and you don't need to do this yourself.
-        DataModSQLContext::setDataModMapping(['*' => '\\DataMod\\']);
     }
 }
 ```
 
 Please note: The extension expects you to have your dataMods located in the `features/bootstrap/DataMod` folder. If you have a different mapping to this, you will have to define your autoload
-strategy in the composer.json file or manually require the files in.
+strategy in the composer.json file or manually require the files in. You can set the mapping in php like so:
+
+```php
+...
+    // Setup data mod mapping. Can also be done from behat.yml
+    // This is the default and you don't need to do this yourself.
+    DataModSQLContext::setDataModMapping(['*' => '\\DataMod\\']);
+...
+```
 
 BaseProvide Class
 ------------------
