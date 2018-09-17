@@ -177,7 +177,7 @@ class DataModSQLContext implements Context
         $dataMod = $this->resolveDataMod($dataModRef);
 
         if (! class_exists($dataMod)) {
-            throw new DataModNotFoundException($dataModRef, self::$dataModMapping);
+            throw new DataModNotFoundException($dataMod, self::$dataModMapping);
         }
 
         return $dataMod;
