@@ -54,8 +54,8 @@ default:
                     debug: false # 1 for all debug, 2 for only SQL queries.
                     userUniqueRef: aq
                     dataModMapping:
-                        - "*": \QuickPack\DataMod\ # Configure path for all data mods using *.
-                        - "User": \QuickPack\DataMod\User\User # Configure single data mod.
+                        "*": \QuickPack\DataMod\ # Configure path for all data mods using *.
+                        "User": \QuickPack\DataMod\User\User # Configure single data mod.
 ```
 
 debug - Turns debugging on off.
@@ -362,10 +362,9 @@ $routes = [
 $routes = [
     'user' => '/user/' . User::getKeyword('id') . '/'
 ];
+
 ```
-
 Just keep on using your standard visit page step definition using the genesis/test-routing
-
 ```php
     /**
      * @Given I am on the :arg1 page
@@ -376,7 +375,6 @@ Just keep on using your standard visit page step definition using the genesis/te
         $url = Routing::getRoute($arg1, function ($url) {
             return BaseProvider::getApi()->get('keyStore')->parseKeywordsInString($url);
         });
-
         $this->getMink()->getSession()->visit($url);
     }
 ```
