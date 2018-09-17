@@ -64,7 +64,8 @@ dataModMapping: Point where your dataMods are via the namespace.
 
 If an exact match for a dataMod is not found, the global path set (*) is used.
 
-- Set the dataMod namespace mapping directly on the context class.
+- Set the dataMod namespace mapping directly on the context class. This way you don't have to set it up for each suite in behat.yml file.
+
 ```php
 
 use Genesis\SQLExtensionWrapper\BaseProvider;
@@ -86,10 +87,14 @@ class FeatureContext
         ]);
 
         // Setup data mod mapping. Can also be done from behat.yml
-        DataModSQLContext::setDataModMapping(['*' => '\\QuickPack\\Model\\']);
+        // This is the default and you don't need to do this yourself.
+        DataModSQLContext::setDataModMapping(['*' => '\\DataMod\\']);
     }
 }
 ```
+
+Please note: The extension expects you to have your dataMods located in the `features/bootstrap/DataMod` folder. If you have a different mapping to this, you will have to define your autoload
+strategy in the composer.json file or manually require the files in.
 
 BaseProvide Class
 ------------------
