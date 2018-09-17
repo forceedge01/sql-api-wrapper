@@ -85,6 +85,7 @@ class FeatureContext
             'password' => 'myPassword'
         ]);
 
+        // Setup data mod mapping. Can also be done from behat.yml
         DataModSQLContext::setDataModMapping(['*' => '\\QuickPack\\Model\\']);
     }
 }
@@ -363,9 +364,8 @@ $routes = [
 ];
 
 ```
-
 Just keep on using your standard visit page step definition using the genesis/test-routing
- ```php
+```php
     /**
      * @Given I am on the :arg1 page
      * @Given I visit the :arg1 page
@@ -375,7 +375,7 @@ Just keep on using your standard visit page step definition using the genesis/te
         $url = Routing::getRoute($arg1, function ($url) {
             return BaseProvider::getApi()->get('keyStore')->parseKeywordsInString($url);
         });
-         $this->getMink()->getSession()->visit($url);
+        $this->getMink()->getSession()->visit($url);
     }
 ```
 
