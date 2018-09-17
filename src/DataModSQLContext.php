@@ -156,13 +156,7 @@ class DataModSQLContext implements Context
             return false;
         }
 
-        $normalisedMapping = [];
-        foreach ($dataModMapping as $mapping) {
-            $key = key($mapping);
-            $normalisedMapping[$key] = $mapping[$key];
-        }
-
-        self::setDataModMapping($normalisedMapping);
+        self::setDataModMapping($dataModMapping);
     }
 
     /**
