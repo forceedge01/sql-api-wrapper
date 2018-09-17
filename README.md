@@ -66,10 +66,25 @@ If an exact match for a dataMod is not found, the global path set (*) is used.
 
 - Set the dataMod namespace mapping directly on the context class.
 ```php
+
+use Genesis\SQLExtensionWrapper\BaseProvider;
+
 class FeatureContext
 {
     public function __construct()
     {
+        // Setup database connection. Has to be done from a constructor of a context file.
+        BaseProvider::setCredentials([
+            'engine' => 'dblib',
+            'name' => 'databaseName',
+            'schema' => 'dbo',
+            'prefix' => 'dev_',
+            'host' => 'myhost',
+            'port' => '1433',
+            'username' => 'myUsername',
+            'password' => 'myPassword'
+        ]);
+
         DataModSQLContext::setDataModMapping(['*' => '\\QuickPack\\Model\\']);
     }
 }
@@ -347,6 +362,21 @@ $routes = [
     'user' => '/user/' . User::getKeyword('id') . '/'
 ];
 
+```
+
+Just keep on using your standard visit page step definition using the genesis/test-routing
+ ```php
+    /**
+     * @Given I am on the :arg1 page
+     * @Given I visit the :arg1 page
+     */
+    public function iAmOnThePage($arg1)
+    {
+        $url = Routing::getRoute($arg1, function ($url) {
+            return BaseProvider::getApi()->get('keyStore')->parseKeywordsInString($url);
+        });
+         $this->getMink()->getSession()->visit($url);
+    }
 ```
 
 Data Retriever Class
