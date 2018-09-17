@@ -20,7 +20,8 @@
     "autoload": {
         "psr-4": {
             "Genesis\\SQLExtensionWrapper\\": "src/",
-            "Genesis\\SQLExtensionWrapper\\Tests\\": "tests/"
+            "Genesis\\SQLExtensionWrapper\\Tests\\": "tests/",
+            "DataMod\\": "features/bootstrap/DataMod/"
          }
     }
 }

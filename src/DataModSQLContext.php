@@ -14,6 +14,8 @@ use Genesis\SQLExtension\Context\Debugger;
  */
 class DataModSQLContext implements Context
 {
+    const DEFAULT_NAMESPACE = '\\DataMod\\';
+
     /**
      * @var array
      */
@@ -177,7 +179,7 @@ class DataModSQLContext implements Context
         $dataMod = $this->resolveDataMod($dataModRef);
 
         if (! class_exists($dataMod)) {
-            throw new DataModNotFoundException($dataModRef, self::$dataModMapping);
+            throw new DataModNotFoundException($dataMod, self::$dataModMapping);
         }
 
         return $dataMod;
@@ -200,9 +202,6 @@ class DataModSQLContext implements Context
             return self::$dataModMapping['*'] . $dataModRef;
         }
 
-        throw new Exception(
-            'DataMod ' . $dataModRef . ' not configured in data mod mapping, mapping available: ' .
-            print_r(self::$dataModMapping, true)
-        );
+        return self::DEFAULT_NAMESPACE . $dataModRef;
     }
 }
