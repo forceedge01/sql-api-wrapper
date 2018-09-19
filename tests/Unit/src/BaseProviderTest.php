@@ -857,6 +857,16 @@ class BaseProviderTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * @param string $class
+     *
+     * @return PHPUnit_Mock
+     */
+    public function createMock($class)
+    {
+        return $this->getMockBuilder($class)->disableOriginalConstructor()->getMock();
+    }
+
+    /**
      * @param string $method The method to invoke.
      * @param array $args The arguments to pass to the method.
      *
