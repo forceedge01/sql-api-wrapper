@@ -68,17 +68,18 @@ debug - Turns debugging on off.
 userUniqueRef: Appends the string onto first column of data provided to the fixture step definitions if its a string. This is so every user has its own unique data if multiple users are targeting a single database.
 dataModMapping: Point where your dataMods are via the namespace. (Optional)
 
-- Set the dataMod namespace mapping directly on the context class. This way you don't have to set it up for each suite in behat.yml file.
-
 ```php
 
+use Behat\Testwork\Hook\Scope\BeforeSuiteScope;
 use Genesis\SQLExtensionWrapper\BaseProvider;
 
 class FeatureContext
 {
-    public function __construct()
+    /**
+     * @BeforeSuite
+     */
+    public static function loadDataModSQLContext(BeforeSuiteScope $scope)
     {
-        // Setup database connection. Has to be done from a constructor of a context file.
         BaseProvider::setCredentials([
             'engine' => 'dblib',
             'name' => 'databaseName',
@@ -97,11 +98,68 @@ Please note: The extension expects you to have your dataMods located in the `fea
 strategy in the composer.json file or manually require the files in. You can set the mapping in php like so:
 
 ```php
+
+use Genesis\SQLExtensionWrapper\DataModSQLContext;
+
 ...
     // Setup data mod mapping. Can also be done from behat.yml
-    // This is the default and you don't need to do this yourself.
-    DataModSQLContext::setDataModMapping(['*' => '\\DataMod\\']);
+    DataModSQLContext::setDataModMapping(['*' => '\\Custom\\DataMod\\']);
 ...
+```
+
+And Finally you can register the context file through php as well. This way you don't have to set it up for each suite in behat.yml file.
+
+```php
+
+use Genesis\SQLExtensionWrapper\DataModSQLContext;
+
+...
+    $scope->getEnvironment()->registerContextClass(
+        DataModSQLContext::class,
+        ['debug' => false]
+    );
+...
+```
+
+So to get all of it working this is what you should have:
+
+```php
+<?php
+
+use Behat\Testwork\Hook\Scope\BeforeSuiteScope;
+use Genesis\SQLExtensionWrapper\BaseProvider;
+use Genesis\SQLExtensionWrapper\DataModSQLContext;
+
+class FeatureContext
+{
+    /**
+     * @BeforeSuite
+     */
+    public static function loadDataModSQLContext(BeforeSuiteScope $scope)
+    {
+        BaseProvider::setCredentials([
+            'engine' => 'dblib',
+            'name' => 'databaseName',
+            'schema' => 'dbo',
+            'prefix' => 'dev_',
+            'host' => 'myhost',
+            'port' => '1433',
+            'username' => 'myUsername',
+            'password' => 'myPassword'
+        ]);
+
+        // Default path is \\DataMod\\ which points to features/DataMod/, override this way.
+        DataModSQLContext::setDataModMapping([
+            '*' => '\\Custom\\DataMod\\'
+        ]);
+
+        $scope->getEnvironment()->registerContextClass(
+            DataModSQLContext::class,
+            ['debug' => false]
+        );
+    }
+}
+
 ```
 
 BaseProvide Class
@@ -171,53 +229,10 @@ class User extends BaseProvider
 
 ```
 
-To use a different version of the Api, you will have to make good use of polymorphism. Extend the BaseProvider in your project and implement the abstract method getAPI(). This method needs to return an object that implements Genesis\SQLExtension\Context\Interfaces\APIInterface.
+Using DataMods in PHP Code
+--------------------------
 
-```php
-# BaseDataMod.php
-<?php
-
-use Genesis\SQLExtensionWrapper\BaseProvider;
-use Genesis\SQLExtension\Context;
-
-/**
- * Serves as a base class for your own project, makes refactoring easier if you decide to inject your own version of 
- * the API.
- */
-abstract class BaseDataMod extends BaseProvider
-{
-    /**
-     * @var array The connection details the API expects.
-     */
-    public static $connectionDetails;
-
-    /**
-     * @var Context\Interfaces\APIInterface
-     */
-    private static $sqlApi;
-
-    /**
-     * @return Context\Interfaces\APIInterface
-     */
-    public static function getAPI()
-    {
-        if (! self::$sqlApi) {
-            self::$sqlApi = new Context\API(
-                new Context\DBManager(Context\DatabaseProviders\Factory(), self::$connectionDetails),
-                new Context\SQLBuilder(),
-                new Context\LocalKeyStore(),
-                new Context\SQLHistory()
-            );
-        }
-
-        return self::$sqlApi;
-    }
-}
-```
-
-Then extend your data mods from the above class instead.
-
-You can now use yoru data mods as above or directly using PHP code in step definitions. Using your UserDataMod in your context file.
+You can now use your data mods as above or directly using PHP code in step definitions. Using your UserDataMod in your context file.
 
 ```php
 # FeatureContext.php
@@ -307,11 +322,23 @@ class FeatureContext
         }
     }
 }
+
 ```
+
+Advanced DataModding
+--------------------
 
 You can further extend your DataMod with other methods like so:
 
 ```php
+<?php
+
+namespace QuickPack\DataMod\User;
+
+use Genesis\SQLExtensionWrapper\BaseProvider;
+
+class User extends BaseProvider
+{
     ...
 
     /**
@@ -349,8 +376,8 @@ You can further extend your DataMod with other methods like so:
             'id' => $userId
         ])
     }
+}
 
-    ...
 ```
 
 The getDefaults() method is special, it will be called automatically if it exists. It allows you to set default values
@@ -391,6 +418,55 @@ Just keep on using your standard visit page step definition using the genesis/te
         $this->getMink()->getSession()->visit($url);
     }
 ```
+
+Advanced Integrations
+---------------------
+
+To use a different version of the Api, you will have to make good use of polymorphism. Extend the BaseProvider in your project and implement the abstract method getAPI(). This method needs to return an object that implements Genesis\SQLExtension\Context\Interfaces\APIInterface.
+
+```php
+# BaseDataMod.php
+<?php
+
+use Genesis\SQLExtensionWrapper\BaseProvider;
+use Genesis\SQLExtension\Context;
+
+/**
+ * Serves as a base class for your own project, makes refactoring easier if you decide to inject your own version of 
+ * the API.
+ */
+abstract class BaseDataMod extends BaseProvider
+{
+    /**
+     * @var array The connection details the API expects.
+     */
+    public static $connectionDetails;
+
+    /**
+     * @var Context\Interfaces\APIInterface
+     */
+    private static $sqlApi;
+
+    /**
+     * @return Context\Interfaces\APIInterface
+     */
+    public static function getAPI()
+    {
+        if (! self::$sqlApi) {
+            self::$sqlApi = new Context\API(
+                new Context\DBManager(Context\DatabaseProviders\Factory(), self::$connectionDetails),
+                new Context\SQLBuilder(),
+                new Context\LocalKeyStore(),
+                new Context\SQLHistory()
+            );
+        }
+
+        return self::$sqlApi;
+    }
+}
+```
+
+Then extend your data mods from the above class instead.
 
 Data Retriever Class
 --------------------
