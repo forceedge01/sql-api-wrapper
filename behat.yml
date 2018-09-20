@@ -5,9 +5,6 @@ default:
         - FeatureContext
         - FailAid\Context\FailureContext
         - Behat\MinkExtension\Context\MinkContext
-        - Genesis\SQLExtensionWrapper\DataModSQLContext:
-            debug: false # 1 for all debug, 2 for only SQL queries.
-            userUniqueRef: aq # Optional
   extensions:
     Cjm\Behat\LocalWebserverExtension:
       host : localhost   # defaults to 'localhost'

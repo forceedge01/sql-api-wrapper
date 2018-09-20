@@ -45,7 +45,7 @@ class FeatureContext implements Context, MinkAwareContext
 
         $scope->getEnvironment()->registerContextClass(
             DataModSQLContext::class,
-            ['debug' => false]
+            ['debug' => 2]
         );
     }
 
