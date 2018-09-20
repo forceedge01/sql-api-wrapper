@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f9b5d3775fbbffedc0fdd45d601f6692",
+    "content-hash": "f2f7bb78e3b1f45fa0d995ecf930192e",
     "packages": [
         {
             "name": "behat/behat",
@@ -220,16 +220,16 @@
         },
         {
             "name": "genesis/behat-sql-extension",
-            "version": "6.2.7",
+            "version": "6.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/forceedge01/behat-sql-extension.git",
-                "reference": "86f3fd18462e915c6db4bdd7ea42f8303fd75862"
+                "reference": "8df31cd0641521b805488176faf0c6deb1f8a5db"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/forceedge01/behat-sql-extension/zipball/86f3fd18462e915c6db4bdd7ea42f8303fd75862",
-                "reference": "86f3fd18462e915c6db4bdd7ea42f8303fd75862",
+                "url": "https://api.github.com/repos/forceedge01/behat-sql-extension/zipball/8df31cd0641521b805488176faf0c6deb1f8a5db",
+                "reference": "8df31cd0641521b805488176faf0c6deb1f8a5db",
                 "shasum": ""
             },
             "require": {
@@ -274,7 +274,7 @@
                 "testing",
                 "web"
             ],
-            "time": "2018-09-19T08:45:38+00:00"
+            "time": "2018-09-20T23:26:44+00:00"
         },
         {
             "name": "psr/container",
