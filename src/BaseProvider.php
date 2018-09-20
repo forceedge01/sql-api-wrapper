@@ -3,7 +3,6 @@
 namespace Genesis\SQLExtensionWrapper;
 
 use Exception;
-use Genesis\SQLExtensionWrapper\BridgeInterface;
 use Genesis\SQLExtensionWrapper\Exception\RequiredDataException;
 use Genesis\SQLExtension\Context;
 
@@ -415,7 +414,7 @@ abstract class BaseProvider implements APIDecoratorInterface, DataModInterface
 
     /**
      * This method is protected and should be implemented
-     * by one your data modules, this is so you can provide more context around the action your taking.
+     * by one your data modules, this is so you can provide more context around the action you're taking.
      *
      * @param array $where The selection criteria.
      *
@@ -424,6 +423,7 @@ abstract class BaseProvider implements APIDecoratorInterface, DataModInterface
     public static function delete(array $where)
     {
         self::ensureBaseTable();
+
         static::getAPI()->delete(self::getBaseTableForCaller(), self::resolveDataFieldMappings($where));
     }
 
