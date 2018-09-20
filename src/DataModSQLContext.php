@@ -4,7 +4,6 @@ namespace Genesis\SQLExtensionWrapper;
 
 use Behat\Behat\Context\Context;
 use Behat\Gherkin\Node\TableNode;
-use Exception;
 use Genesis\SQLExtensionWrapper\Exception\DataModNotFoundException;
 use Genesis\SQLExtension\Context\Debugger;
 
@@ -19,7 +18,7 @@ class DataModSQLContext implements Context
     /**
      * @var array
      */
-    private static $dataModMapping;
+    private static $dataModMapping = [];
 
     /**
      * @var string
@@ -43,8 +42,8 @@ class DataModSQLContext implements Context
     }
 
     /**
-     * @Given I have a :dataModRef fixture
-     * @Given I have a :dataModRef fixture with the following data set:
+     * @Given I have a/an :dataModRef fixture
+     * @Given I have a/an :dataModRef fixture with the following data set:
      *
      * Note: The first row value in the TableNode is considered the unique key.
      *
