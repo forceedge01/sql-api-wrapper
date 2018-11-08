@@ -8,16 +8,16 @@ namespace Genesis\SQLExtensionWrapper;
 interface BridgeInterface
 {
     /**
-     * @param string $dataModelClass
+     * @param string $bridgedClass
      *
      * @return string
      */
-    public static function getBaseTable($dataModelClass);
+    public static function getBaseTable($bridgedClass);
 
     /**
-     * @param string $dataModelClass
+     * @param string $bridgedClass
      *
      * @return array
      */
-    public static function getDataMapping($dataModelClass);
+    public static function getDataMapping($bridgedClass);
 }

@@ -10,7 +10,7 @@ use Genesis\SQLExtension\Context;
 * This class serves as a Decorator for the Genesis API class.
 * To use this class effectively, create separate classes for each of your tables and extend off this class.
 */
-abstract class BaseProvider implements APIDecoratorInterface, DataModInterface
+abstract class BaseProvider implements APIDecoratorInterface
 {
     /**
      * @var array The saved session storage.
@@ -68,8 +68,10 @@ abstract class BaseProvider implements APIDecoratorInterface, DataModInterface
      */
     public static function getBaseTableForCaller()
     {
-        if ($bridge = self::$bridge) {
-            return $bridge::getBaseTable(static::class);
+        if (($bridge = self::$bridge) &&
+            self::implementsInterface(get_called_class(), BridgedDataModInterface::class)
+        ) {
+            return $bridge->getBaseTable(static::getBridgedClass());
         }
 
         return static::getBaseTable();
@@ -85,8 +87,10 @@ abstract class BaseProvider implements APIDecoratorInterface, DataModInterface
      */
     public static function getDataMappingForCaller()
     {
-        if ($bridge = self::$bridge) {
-            return $bridge::getDataMapping(static::class);
+        if (($bridge = self::$bridge) &&
+            self::implementsInterface(get_called_class(), BridgedDataModInterface::class)
+        ) {
+            return $bridge->getDataMapping(static::getBridgedClass());
         }
 
         return static::getDataMapping();
@@ -553,5 +557,16 @@ abstract class BaseProvider implements APIDecoratorInterface, DataModInterface
         }
 
         return $table;
+    }
+
+    /**
+     * @param string $class
+     * @param string $interface
+     *
+     * @return bool
+     */
+    private static function implementsInterface($class, $interface)
+    {
+        return (in_array($interface, class_implements($class)));
     }
 }
