@@ -60,7 +60,7 @@ default:
     extensions:
         Genesis\SQLExtensionWrapper\Extension:
             connection:
-                engine: mysql
+                engine: mysql # mssql, pgsql, sqlite
                 host: localhost
                 port: 1234
                 dbname: mydb
