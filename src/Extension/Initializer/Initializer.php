@@ -42,7 +42,7 @@ class Initializer implements ContextInitializer
         if ($context instanceof DataModSQLContext) {
             BaseProvider::setCredentials([
                 'engine' => $this->getConfig('engine'),
-                'name' => $this->getConfig('dbname'),
+                'dbname' => $this->getConfig('dbname'),
                 'schema' => $this->getConfig('schema'),
                 'prefix' => $this->getConfig('prefix'),
                 'host' => $this->getConfig('host'),

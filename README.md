@@ -5,11 +5,9 @@ the web interface. This extension provides a framework where you will configure 
 
 Release details:
 ----------------
-Major: Don't perform formatting unless flag passed in.
+Major: Initialize context through initializer using the extensions channel.
 
-Minor: 
-1. New step defintion for deletion. Opened up insert, delete methods for public usage from the base provider.
-2. New step definition for assertion against the database. (Use when testing Api's)
+Minor: NA.
 
 Patch: NA.
 
@@ -77,69 +75,19 @@ default:
 
 debug - Turns debugging on off.
 userUniqueRef: Appends the string onto first column of data provided to the fixture step definitions if its a string. This is so every user has its own unique data if multiple users are targeting a single database.
+connectionDetails: Your database connection details.
 dataModMapping: Point where your dataMods are via the namespace. (Optional)
-
-```php
-
-use Behat\Testwork\Hook\Scope\BeforeSuiteScope;
-use Genesis\SQLExtensionWrapper\BaseProvider;
-
-class FeatureContext
-{
-    /**
-     * @BeforeSuite
-     */
-    public static function loadDataModSQLContext(BeforeSuiteScope $scope)
-    {
-        BaseProvider::setCredentials([
-            'engine' => 'dblib',
-            'name' => 'databaseName',
-            'schema' => 'dbo',
-            'prefix' => 'dev_',
-            'host' => 'myhost',
-            'port' => '1433',
-            'username' => 'myUsername',
-            'password' => 'myPassword'
-        ]);
-    }
-}
-```
 
 Please note: The extension expects you to have your dataMods located in the `features/bootstrap/DataMod` folder. If you have a different mapping to this, you will have to define your autoload
 strategy in the composer.json file or manually require the files in. You can set the mapping in php like so:
 
-```php
-
-use Genesis\SQLExtensionWrapper\DataModSQLContext;
-
-...
-    // Setup data mod mapping. Can also be done from behat.yml
-    DataModSQLContext::setDataModMapping(['*' => '\\Custom\\DataMod\\']);
-...
-```
-
-And Finally you can register the context file through php as well. This way you don't have to set it up for each suite in behat.yml file.
+You can register the context file through php as well.
 
 ```php
-
-use Genesis\SQLExtensionWrapper\DataModSQLContext;
-
-...
-    $scope->getEnvironment()->registerContextClass(
-        DataModSQLContext::class,
-        ['debug' => false]
-    );
-...
-```
-
-So to get all of it working this is what you should have:
-
-```php
-<?php
 
 use Behat\Testwork\Hook\Scope\BeforeSuiteScope;
-use Genesis\SQLExtensionWrapper\BaseProvider;
 use Genesis\SQLExtensionWrapper\DataModSQLContext;
+use Genesis\SQLExtensionWrapper\BaseProvider;
 
 class FeatureContext
 {
@@ -170,7 +118,6 @@ class FeatureContext
         );
     }
 }
-
 ```
 
 BaseProvide Class
