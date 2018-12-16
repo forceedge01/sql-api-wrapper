@@ -31,13 +31,12 @@ class DataModSQLContext implements Context
      * @param string $userUniqueRef Will be appended to new data created to separate data based on users.
      * Best to limit it to 2 characters.
      */
-    public function __construct(array $dataModMapping = array(), $debug = false, $userUniqueRef = null)
+    public function __construct($debug = false, $userUniqueRef = null)
     {
         if ($debug) {
             Debugger::enable($debug);
         }
 
-        self::setDataModMappingFromBehatYamlFile($dataModMapping);
         self::$userUniqueRef = $userUniqueRef;
     }
 

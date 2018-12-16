@@ -59,9 +59,20 @@ default:
                 - Genesis\SQLExtensionWrapper\DataModSQLContext:
                     debug: false # 1 for all debug, 2 for only SQL queries.
                     userUniqueRef: aq # Optional
-                    dataModMapping: # Optional
-                        "*": \QuickPack\DataMod\ # Configure path for all data mods using *.
-                        "User": \QuickPack\DataMod\User\User # Configure single data mod.
+    extensions:
+        Genesis\SQLExtensionWrapper\Extension:
+            connection:
+                engine: mysql
+                host: localhost
+                port: 1234
+                dbname: mydb
+                username: root
+                password: root
+                schema: myschema
+                dbprefix: dev_
+            dataModMapping: # Optional
+                "*": \QuickPack\DataMod\ # Configure path for all data mods using *.
+                "User": \QuickPack\DataMod\User\User # Configure single data mod.
 ```
 
 debug - Turns debugging on off.
