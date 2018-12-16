@@ -220,16 +220,16 @@
         },
         {
             "name": "genesis/behat-sql-extension",
-            "version": "6.3.0",
+            "version": "6.3.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/forceedge01/behat-sql-extension.git",
-                "reference": "8df31cd0641521b805488176faf0c6deb1f8a5db"
+                "reference": "2c74e38cb2cefced199cb46885d6b1a57b18b54d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/forceedge01/behat-sql-extension/zipball/8df31cd0641521b805488176faf0c6deb1f8a5db",
-                "reference": "8df31cd0641521b805488176faf0c6deb1f8a5db",
+                "url": "https://api.github.com/repos/forceedge01/behat-sql-extension/zipball/2c74e38cb2cefced199cb46885d6b1a57b18b54d",
+                "reference": "2c74e38cb2cefced199cb46885d6b1a57b18b54d",
                 "shasum": ""
             },
             "require": {
@@ -274,7 +274,7 @@
                 "testing",
                 "web"
             ],
-            "time": "2018-09-20T23:26:44+00:00"
+            "time": "2018-12-16T12:21:02+00:00"
         },
         {
             "name": "psr/container",

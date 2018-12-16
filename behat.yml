@@ -5,11 +5,19 @@ default:
         - FeatureContext
         - FailAid\Context\FailureContext
         - Behat\MinkExtension\Context\MinkContext
+        - Genesis\SQLExtensionWrapper\DataModSQLContext:
+            debug: 2
   extensions:
     Cjm\Behat\LocalWebserverExtension:
       host : localhost   # defaults to 'localhost'
       port : 8000            # defaults to '8000'
       docroot: app     # defaults to '%paths.base%/web'
+    Genesis\SQLExtensionWrapper\Extension:
+      connection:
+        engine: sqlite
+        dbname: app/db/database.db
+      dataModMapping: # Optional
+        "*": \DataMod\ # Configure path for all data mods using *.
     Behat\MinkExtension:
       base_url: 'http://localhost:8000'
       sessions:
