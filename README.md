@@ -7,7 +7,7 @@ Release details:
 ----------------
 Major: Initialize context through initializer using the extensions channel.
 
-Minor: NA.
+Minor: Step definition to save last Id as a different keyword.
 
 Patch: NA.
 
