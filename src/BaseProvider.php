@@ -454,6 +454,20 @@ abstract class BaseProvider implements APIDecoratorInterface
     }
 
     /**
+     * @param array $data
+     *
+     * @return Representations\Query
+     */
+    public static function getSampleInsertQuery(array $data = [])
+    {
+        self::ensureBaseTable();
+        return BaseProvider::getApi()->getSampleInsertQuery(
+            self::getBaseTableForCaller(),
+            self::resolveDataFieldMappings($data)
+        );
+    }
+
+    /**
      * Truncates a table based on the value provided by getBaseTable and assumes that the table has the column id.
      * Depends on getBaseTable. This method is protected and should be implemented
      * by one your data modules, this is so you can provide more context around the action your taking.
