@@ -11,7 +11,7 @@
         }
     ],
     "require": {
-        "genesis/behat-sql-extension": "~6.3",
+        "genesis/behat-sql-extension": "~6.4",
         "php": "~5.5|~7.0"
     },
     "require-dev": {
