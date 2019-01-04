@@ -148,6 +148,16 @@ class DataModSQLContext implements Context
     }
 
     /**
+     * @Given I save the id as :key
+     */
+    public function iSaveTheIdAs($key)
+    {
+        BaseProvider::getApi()->setKeyword($key, BaseProvider::getApi()->getLastId());
+
+        return $this;
+    }
+
+    /**
      * @param array $dataModMapping
      */
     private static function setDataModMappingFromBehatYamlFile(array $dataModMapping = array())
