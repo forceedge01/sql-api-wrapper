@@ -7,7 +7,7 @@ Release details:
 ----------------
 Major: Initialize context through initializer using the extensions channel.
 
-Minor: Step definition to save last Id as a different keyword.
+Minor: Post create hook introduced. Allow extra data to be supplied for auxiliary records.
 
 Patch: NA.
 
