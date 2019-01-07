@@ -12,6 +12,8 @@ use Genesis\SQLExtension\Context;
 */
 abstract class BaseProvider implements APIDecoratorInterface
 {
+    const EXCLUDE_FROM_QUERY_IDENTIFIER = '*';
+
     /**
      * @var array The saved session storage.
      */
@@ -388,8 +390,10 @@ abstract class BaseProvider implements APIDecoratorInterface
 
         $data = array_merge(self::getDefaultsForCaller($data), $data);
         static::getAPI()->insert(self::getBaseTableForCaller(), self::resolveDataFieldMappings($data));
+        $id = static::getAPI()->getLastId();
+        static::postCreateHook($id, $data);
 
-        return static::getAPI()->getLastId();
+        return $id;
     }
 
     /**
@@ -495,7 +499,12 @@ abstract class BaseProvider implements APIDecoratorInterface
     {
         $resolvedData = [];
         foreach ($data as $key => $value) {
-            $resolvedData[self::getFieldMapping($key)] = $value;
+            $column = self::getFieldMapping($key);
+            if ($column === self::EXCLUDE_FROM_QUERY_IDENTIFIER) {
+                continue;
+            }
+
+            $resolvedData[$column] = $value;
         }
 
         return $resolvedData;
@@ -529,6 +538,17 @@ abstract class BaseProvider implements APIDecoratorInterface
             throw new Exception('This call requires the getBaseTable to return the table to operate on.');
         }
     }
+
+    /**
+     * Special Method: Use this method to create auxiliary data off the initial create. This is suitable
+     * for creating data where the tables are fragmented.
+     *
+     * @param int $id The id of the created record.
+     * @param array $data The data that was originally passed to create.
+     *
+     * @return void
+     */
+    protected static function postCreateHook($id, array $data) {}
 
     /**
      * Process seed data insertion.
