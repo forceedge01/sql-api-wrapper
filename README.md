@@ -170,6 +170,8 @@ class User extends BaseProvider
      * Returns the data mapping for the base table. This is the data that is allowed to be passed in
      * to the data mod. <input> => <mapping>
      *
+     * Note any column mapped to '*' is excluded from the queries and only is a part of the data passed around.
+     *
      * @return array
      */
     public static function getDataMapping()
@@ -180,7 +182,9 @@ class User extends BaseProvider
             'email' => 'electronic_address',
             'dateOfBirth' => 'd_o_b',
             'gender' => 'gender',
-            'status' => 'real_status'
+            'status' => 'real_status',
+            'anythingElse' => '*',
+            'somethingElse' => '*',
         ];
     }
 }
@@ -298,6 +302,20 @@ use Genesis\SQLExtensionWrapper\BaseProvider;
 class User extends BaseProvider
 {
     ...
+
+    /**
+     * Special Method: Use this method to create auxiliary data off the initial create. This is suitable
+     * for creating data where the tables are fragmented.
+     *
+     * @param int $id The id of the created record.
+     * @param array $data The data that was originally passed to create.
+     *
+     * @return void
+     */
+    public static function postCreateHook($id, array $data)
+    {
+        Meta::createFixture(...);
+    }
 
     /**
      * Special Method: This method if implemented is merged with the data provided.
