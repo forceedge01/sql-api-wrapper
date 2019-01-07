@@ -27,7 +27,8 @@ class User extends BaseProvider implements DataModInterface
             'id' => 'id',
             'name' => 'name',
             'date of birth' => 'dob',
-            'age' => 'age'
+            'age' => 'age',
+            'hobby' => '*',
         ];
     }
 
