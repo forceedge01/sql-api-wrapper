@@ -1,5 +1,5 @@
 {
-    "name": "genesis/sql-api-wrapper",
+    "name": "genesis/sql-data-mods",
     "type": "behat-extension",
     "description": "SQL/PDO extension - extending capabilities provided by the original SQL API extension.",
     "keywords": ["web", "test", "browser", "pdo", "behat", "sql", "testing", "bdd", "database", "mysql", "data"],
