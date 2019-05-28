@@ -12,6 +12,7 @@ Feature:
             | name          | Wahab Qureshi |
             | date of birth | 10-05-1989    |
             | age           | 29            |
+            | hobby         | swimming      |
         And I have an "Address" fixture
 
         When I reload the page
